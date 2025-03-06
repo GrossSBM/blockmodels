@@ -12,11 +12,12 @@ Description: Latent and Stochastic Block Model estimation by a Variational EM al
 License: LGPL-2.1
 Depends: R (>= 3.4.0)
 LinkingTo: Rcpp, RcppArmadillo
-RoxygenNote: 7.1.1
+RoxygenNote: 7.3.2
 Imports: 
     Rcpp,
     parallel, 
     methods, 
     digest
+Encoding: UTF-8
 URL: https://github.com/jb-leger/blockmodels
 BugReports: https://github.com/jb-leger/blockmodels/issues
