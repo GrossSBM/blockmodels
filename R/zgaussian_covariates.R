@@ -4,7 +4,7 @@ BM_gaussian_covariates <- setRefClass("BM_gaussian_covariates",
     methods = list(
         initialize = function(membership_type,adj,covariates,...)
         {
-            if(class(covariates)=="matrix")
+            if (is.matrix(covariates))
             {
                 covariates_list <- list(covariates)
             }
