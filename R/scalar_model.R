@@ -147,7 +147,7 @@ setRefClass("scalar_model",
                 {
                     if(length(ICL)!=0)
                     {
-                        say(1,"Computation of eigen decomposition used for initalizations")
+                        say(1, "Computation of eigen decomposition used for initalizations")
                         
                         error <- .self$residual(1)
                         W<- error %*% t(error)
@@ -156,8 +156,6 @@ setRefClass("scalar_model",
                         L<- D %*% W %*% D
 
                         precomputed$eigen <<- eigen(L, symmetric=TRUE)
-                        
-                        cat("\n")
                     }
                 }
             }
@@ -171,7 +169,7 @@ setRefClass("scalar_model",
                 {
                     if(length(ICL)!=0)
                     {
-                        say(1,"Computation of eigen decomposition used for initalizations")
+                        say(1, "Computation of eigen decomposition used for initalizations")
                         error <- .self$residual(2)
                         
                         say(2,"for rows")
@@ -191,8 +189,6 @@ setRefClass("scalar_model",
                         L2<- D2 %*% W2 %*% D2
 
                         precomputed$eigen2 <<- eigen(L2, symmetric=TRUE)
-                        
-                        cat("\n")
                     }
                 }
             }
