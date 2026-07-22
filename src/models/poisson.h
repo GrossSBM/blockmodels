@@ -7,6 +7,9 @@ class poisson
     {
         public:
         mat adj; // adjacency matrix
+        
+        mat maskNA;
+        mat maskNAt;
 
         // precalculated matrices for SBM
         mat adjZD;
@@ -26,14 +29,23 @@ class poisson
         network(Rcpp::List & network_from_R)
         {
             mat adj_orig = network_from_R["adjacency"];
+            double na_replace_value = 0;
+            if(network_from_R.containsElementNamed("na_replace_value"))
+            {
+                na_replace_value = Rcpp::as<double>(network_from_R["na_replace_value"]);
+            }
 
-            adj = adj_orig;
-            adjt = adj_orig.t();
-            Mones = ones<mat>(adj.n_rows,adj.n_cols);
+            maskNA = compute_mask(adj_orig);
+
+            maskNAt = maskNA.t();
+
+            adj = replace_missing_values(adj_orig, na_replace_value) % maskNA; // Replace NAs to perform computation and apply mask
+            adjt = adj.t();
+            Mones = maskNA;// The NA are zeros there ones<mat>(adj.n_rows,adj.n_cols);
             Monest = Mones.t();
-            adjZD = fill_diag(adj_orig,0);
+            adjZD = fill_diag(adj,0); // We work on masked matrix
             adjZDt = adjZD.t();
-            MonesZD = fill_diag(Mones,0);
+            MonesZD = fill_diag(Mones,0); // We work on the ones ie the non NA data
 
             accu_log_fact(adj,accu_log_fact_X,accu_log_fact_XZD);
 

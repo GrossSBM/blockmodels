@@ -41,7 +41,7 @@ parallel_lapply <- function(X,FUN,...,mc.cores,mc.set.seed=FALSE,mc.silent=TRUE,
     {
         k<-0
         nb_jobs_total <- length(sx)
-        nb_jobs_done <- 0
+        nb_jobs_done <- 1
         for(x in sx)
         {
             if(verbose)

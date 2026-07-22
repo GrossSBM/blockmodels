@@ -3,3 +3,5 @@
 .*.swp
 .*.swo
 .Rproj.user
+docs
+.vscode

@@ -41,7 +41,8 @@ setRefClass("scalar_model_with_covariates",
         {
             list(
                 adjacency = adj,
-                covariates = covariates
+                covariates = covariates,
+                na_replace_value = na_replace_value
             )
         }
     )

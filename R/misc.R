@@ -54,3 +54,44 @@ cumtime <- function()
         )
     )
 }
+
+softmax_rows <- function(x)
+{
+    x_shift <- x - apply(x, 1, max)
+    ex <- exp(x_shift)
+    ex / rowSums(ex)
+}
+
+membership_compute_alpha <- function(Z, covariates, coefficients)
+{
+    if (length(covariates) > 0 && length(coefficients) > 0)
+    {
+        return(softmax_rows(covariates %*% coefficients))
+    }
+
+    colMeans(Z)
+}
+
+install_membership_alpha_binding <- function(object_env, binding_name, z_field, covariates_field, coefficients_field)
+{
+    if (!exists(binding_name, envir = object_env, inherits = FALSE))
+    {
+        makeActiveBinding(
+            binding_name,
+            function(value)
+            {
+                if (!missing(value))
+                {
+                    stop(paste(binding_name, "is read-only"))
+                }
+
+                Z <- get(z_field, envir = object_env)
+                covariates <- get(covariates_field, envir = object_env)
+                coefficients <- get(coefficients_field, envir = object_env)
+
+                membership_compute_alpha(Z, covariates, coefficients)
+            },
+            object_env
+        )
+    }
+}

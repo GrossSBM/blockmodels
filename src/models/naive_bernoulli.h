@@ -7,11 +7,13 @@ class naive_bernoulli
     {
         public:
         mat adj;
+        mat maskNA;
 
         network(Rcpp::List & network_from_R)
         {
             mat adj_orig = network_from_R["adjacency"];
             adj = adj_orig;
+            maskNA = compute_mask(adj_orig);
         }
     };
 
@@ -85,7 +87,7 @@ class naive_bernoulli
 inline
 double logf(naive_bernoulli & model, naive_bernoulli::network & net, unsigned int i, unsigned int j, unsigned int q, unsigned int l)
 {
-    return net.adj(i,j)*log(model.pi(q,l)) + (1-net.adj(i,j))*log(1-model.pi(q,l));
+    return net.maskNA(i,j) * net.adj(i,j) *log(model.pi(q,l)) + net.maskNA(i,j) * (1-net.adj(i,j))*log(1-model.pi(q,l));
 }
 
 inline
@@ -94,7 +96,7 @@ double grad_logf(naive_bernoulli & model, naive_bernoulli::network & net, unsign
     if( param % model.pi.n_rows == q )
     {
         if( param / model.pi.n_rows == l)
-            return net.adj(i,j)/(model.pi(q,l)) - (1-net.adj(i,j))/(1-model.pi(q,l));
+            return net.maskNA(i,j) * net.adj(i,j)/(model.pi(q,l)) - net.maskNA(i,j) * (1-net.adj(i,j))/(1-model.pi(q,l));
     }
     
     return 0;

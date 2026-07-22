@@ -22,6 +22,9 @@ class gaussian
          */
         mat adj;
 
+        mat maskNA;
+        mat maskNAt;
+
         //precomputed matrix for SBM
         mat adjZD;
         mat adjZDt;
@@ -58,8 +61,18 @@ class gaussian
              * adjacency matrix, and the i-th matrix is the matrix of the i-th
              * covariate on all edges.
              */
-            adj = Rcpp::as<mat>(network_from_R["adjacency"]);
+            mat adj_orig = Rcpp::as<mat>(network_from_R["adjacency"]);
+            double na_replace_value = 0;
+            if(network_from_R.containsElementNamed("na_replace_value"))
+            {
+                na_replace_value = Rcpp::as<double>(network_from_R["na_replace_value"]);
+            }
 
+            maskNA = compute_mask(adj_orig);
+
+            maskNAt = maskNA.t();
+
+            adj = replace_missing_values(adj_orig, na_replace_value); // Replace NAs to perform
             adjZD = fill_diag(adj,0);
             adjt = adj.t();
             Mones = ones<mat>(adj.n_rows,adj.n_cols);
@@ -67,8 +80,8 @@ class gaussian
             adjZDt = adjZD.t();
             MonesZD = fill_diag(Mones,0);
 
-            accu_adj_square = accu( adj % adj );
-            accu_adjZD_square = accu( adjZD % adjZD );
+            accu_adj_square = accu( (adj%maskNA)% adj );
+            accu_adjZD_square = accu( (adjZD%maskNA) % adjZD );
         }
     };
 
@@ -177,10 +190,10 @@ void e_fixed_step(SBM & membership,
                   mat & lZ)
 {
     lZ += 1.0/(2*model.sigma2) * (
-            - net.MonesZD * membership.Z * (model.mu.t() % model.mu.t())
-            + 2 * net.adjZD * membership.Z * model.mu.t()
-            - net.MonesZD * membership.Z * (model.mu % model.mu)
-            + 2 * net.adjZDt * membership.Z * model.mu
+            - (net.MonesZD%net.maskNA) * membership.Z * (model.mu.t() % model.mu.t())
+            + 2 * (net.adjZD%net.maskNA) * membership.Z * model.mu.t()
+            - (net.MonesZD%net.maskNA) * membership.Z * (model.mu % model.mu)
+            + 2 * (net.adjZDt%net.maskNAt) * membership.Z * model.mu
         );
 }
 
@@ -206,8 +219,8 @@ void e_fixed_step(SBM_sym & membership,
                   mat & lZ)
 {
     lZ  += 1.0/(2*model.sigma2) * (
-            - net.MonesZD * membership.Z * (model.mu % model.mu)
-            + 2 * net.adjZD * membership.Z * model.mu
+            - (net.MonesZD%net.maskNA) * membership.Z * (model.mu % model.mu)
+            + 2 * (net.adjZD%net.maskNA) * membership.Z * model.mu
         );
 }
 
@@ -235,12 +248,12 @@ void e_fixed_step(LBM & membership,
                   mat & lZ2)
 {
     lZ1 += 1.0/(2*model.sigma2) * (
-            - net.Mones * membership.Z2 * (model.mu.t() % model.mu.t())
-            + 2 * net.adj * membership.Z2 * model.mu.t()
+            - (net.Mones%net.maskNA) * membership.Z2 * (model.mu.t() % model.mu.t())
+            + 2 * (net.adj%net.maskNA) * membership.Z2 * model.mu.t()
         );
     lZ2 += 1.0/(2*model.sigma2) * (
-            - net.Monest * membership.Z1 * (model.mu % model.mu)
-            + 2 * net.adjt * membership.Z1 * model.mu
+            - (net.Monest%net.maskNAt) * membership.Z1 * (model.mu % model.mu)
+            + 2 * (net.adjt%net.maskNAt) * membership.Z1 * model.mu
         );
 }
 
@@ -265,21 +278,21 @@ double m_step(SBM & membership,
               gaussian & model,
               gaussian::network & net)
 {
-    model.mu = (membership.Z.t() * net.adjZD * membership.Z)
+    model.mu = (membership.Z.t() * (net.adjZD%net.maskNA) * membership.Z)
                 /
-               (membership.Z.t() * net.MonesZD * membership.Z);
+               (membership.Z.t() * (net.MonesZD%net.maskNA) * membership.Z);
     
     double all_accu_except_square_adj = accu(
             (
                 (model.mu % model.mu)
                 %
-                (membership.Z.t() * net.MonesZD * membership.Z)
+                (membership.Z.t() * (net.MonesZD%net.maskNA) * membership.Z)
             )
             -
             (
                 2 * model.mu
                 %
-                (membership.Z.t() * net.adjZD * membership.Z)
+                (membership.Z.t() * (net.adjZD%net.maskNA) * membership.Z)
             )
         );
 
@@ -339,21 +352,21 @@ double m_step(LBM & membership,
               gaussian & model,
               gaussian::network & net)
 {
-    model.mu = (membership.Z1.t() * net.adj * membership.Z2)
+    model.mu = (membership.Z1.t() * (net.adj%net.maskNA) * membership.Z2)
                 /
-               (membership.Z1.t() * net.Mones * membership.Z2);
+               (membership.Z1.t() * (net.Mones%net.maskNA) * membership.Z2);
     
     double all_accu_except_square_adj = accu(
             (
                 (model.mu % model.mu)
                 %
-                (membership.Z1.t() * net.Mones * membership.Z2)
+                (membership.Z1.t() * (net.Mones%net.maskNA) * membership.Z2)
             )
             -
             (
                 2 * model.mu
                 %
-                (membership.Z1.t() * net.adj * membership.Z2)
+                (membership.Z1.t() * (net.adj%net.maskNA) * membership.Z2)
             )
         );
 

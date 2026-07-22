@@ -3,10 +3,12 @@
 
 setRefClass("SBM",
     fields = list(
-        Z="matrix"
+        Z="matrix",
+        nodes_covariates = "matrix",
+        B = "matrix"
     ),
     methods = list(
-        initialize = function(network_size=FALSE,classif=FALSE,from_cc=FALSE)
+        initialize = function(network_size=FALSE,classif=FALSE,from_cc=FALSE, nodes_covar = NULL)
         {
             if(!classif[1])
             {
@@ -17,6 +19,12 @@ setRefClass("SBM",
                 else
                 {
                     Z <<- from_cc$Z
+                    if ("nodes_covariates" %in% names(from_cc) && !is.null(from_cc[["nodes_covariates"]])){
+                        nodes_covariates <<- from_cc[["nodes_covariates"]]
+                    }
+                    if ("B" %in% names(from_cc) && length(from_cc[["B"]]) > 0) {
+                        B <<- from_cc[["B"]]
+                    }
                 }
             }
             else
@@ -25,11 +33,17 @@ setRefClass("SBM",
                 classif <- as.numeric(fclassif)
                 Q <- length(levels(fclassif))
                 Z <<- matrix(0,nrow=length(classif),ncol=Q)
-                for(i in 1:length(classif))
+                for(i in seq_along(classif))
                 {
                     Z[i,classif[i]] <<- 1
                 }
             }
+            # TODO Add a check in user function to assert nodes_covariates size, where defined is correct
+            if (!is.null(nodes_covar)) {
+                nodes_covariates <<- nodes_covar
+            }
+
+            install_membership_alpha_binding(.self, "alpha", "Z", "nodes_covariates", "B")
         },
         digest = function()
         {
@@ -44,13 +58,26 @@ setRefClass("SBM",
             cat("SBM membership\n")
             cat("    Groups:",paste(ncol(Z),"groups\n"))
             cat("    Nodes:",paste(nrow(Z),"nodes\n"))
-            cat("    Usefull fields and methods:\n")
+            cat("    Useful fields and methods:\n")
             cat("        $Z : matrix of nodes memberships\n")
+            if(length(nodes_covariates) > 0) {
+                cat("        $nodes_covariates : matrix of nodes covariates\n")
+            }
+            if(length(B) > 0) {
+                cat("        $B : matrix of nodes covariates coefficients\n")
+            }
             cat("        $plot() : plot the memberships\n")
         },
         to_cc = function()
         {
-            list(Z=Z)
+            output_list <- list(Z=Z)
+            if (length(nodes_covariates) != 0){
+                output_list[["nodes_covariates"]] <- nodes_covariates
+            }
+            if (length(B) != 0){
+                output_list[["B"]] <- B
+            }
+            return(output_list)
         },
         map = function()
         {
@@ -60,7 +87,12 @@ setRefClass("SBM",
         },
         ICL_penalty = function()
         {
-            (dim(Z)[2]-1)*log(dim(Z)[1])
+            if (length(B) > 0) {
+                p <- nrow(B)
+            } else {
+                p <- 1
+            }
+            p * (dim(Z)[2]-1)*log(dim(Z)[1])
         },
         merges = function()
         {
@@ -72,7 +104,7 @@ setRefClass("SBM",
                 {
                     Z2<-Z[,-k2]
                     Z2[,k1]<-Z[,k1]+Z[,k2]
-                    result <- c(result,list(getRefClass('SBM')(from_cc=list(Z=Z2))))
+                    result <- c(result,list(getRefClass('SBM')(from_cc=list(Z=Z2), nodes_covar = nodes_covariates)))
                 }
             }
             return(result)
@@ -82,7 +114,7 @@ setRefClass("SBM",
             rn<-rownames(Z)
             if(is.null(rn))
             {
-                rn<-1:nrow(Z)
+                rn<-seq_len(nrow(Z))
             }
             ordering <- order(.self$map()$C)
             matrixplot(as.matrix(Z[ordering,]),rowlabels=rn[ordering])

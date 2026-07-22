@@ -7,6 +7,7 @@
 using namespace arma;
 
 #include "misc_functions.h"
+#include "nodes_covariates.h"
 #include "memberships/sbm.h"
 #include "memberships/lbm.h"
 #include "generic_functions.h"

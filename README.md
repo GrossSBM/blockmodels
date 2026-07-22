@@ -1,11 +1,13 @@
-
-# blockmodels
-
+<!-- README.md is generated from README.Rmd. Please edit that file -->
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/GrossSBM/blockmodels/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/GrossSBM/blockmodels/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
-The goal of blockmodels is to ...
+# blockmodels: Latent and Stochastic Block Model Estimation by a ‘V-EM’ Algorithm
+
+Latent and Stochastic Block Model estimation by a Variational EM
+algorithm. Various probability distribution are provided (Bernoulli,
+Poisson…), with or without covariates.
 
 ## Installation
 
@@ -16,12 +18,8 @@ You can install the development version of blockmodels from [GitHub](https://git
 pak::pak("GrossSBM/blockmodels")
 ```
 
-## Example
+## Documentation
 
-This is a basic example which shows you how to solve a common problem:
-
-``` r
-library(blockmodels)
-## basic example code
-```
-
+The package documentation is available on
+[CRAN](https://cran.r-project.org/web/packages/blockmodels/index.html)
+and (will be) on [GitHub](https://grosssbm.github.io/blockmodels/).
