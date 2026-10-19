@@ -29,17 +29,12 @@ class bernoulli
         network(Rcpp::List & network_from_R)
         {
             mat adj_orig = network_from_R["adjacency"];
-            double na_replace_value = 0;
-            if(network_from_R.containsElementNamed("na_replace_value"))
-            {
-                na_replace_value = Rcpp::as<double>(network_from_R["na_replace_value"]);
-            }
 
             maskNA = compute_mask(adj_orig);
 
             maskNAt = maskNA.t();
 
-            adj = replace_missing_values(adj_orig, na_replace_value); // Replace NAs to perform
+            adj = replace_missing_values(adj_orig); // Replace NAs to perform
             adjZD = fill_diag(adj,0);
             ones_minus_adj_ZD = fill_diag(1-adj,0);
             adjZDt = adjZD.t();

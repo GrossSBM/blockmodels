@@ -60,7 +60,7 @@ test_that("BM_bernoulli_covariates_fast LBM estimation runs", {
 })
 
 
-test_that("BM_bernoulli_covariates_fast SBM handles partial NA and is invariant to na_replace_value", {
+test_that("BM_bernoulli_covariates_fast SBM handles partial NA", {
     set.seed(111)
 
     npc <- 10
@@ -79,15 +79,6 @@ test_that("BM_bernoulli_covariates_fast SBM handles partial NA and is invariant 
     M[sample(off_diag, max(1, floor(0.15 * length(off_diag))))] <- NA_real_
 
     set.seed(113)
-    model_default <- BM_bernoulli_covariates_fast("SBM", M, list(Y1, Y2), na_replace_value = 0, plotting = "", explore_min = 2, explore_max = 2, ncores = 1, verbosity = 0)
-    expect_no_error(model_default$estimate())
-
-    set.seed(113)
-    model_custom <- BM_bernoulli_covariates_fast("SBM", M, list(Y1, Y2), na_replace_value = -321, plotting = "", explore_min = 2, explore_max = 2, ncores = 1, verbosity = 0)
-    expect_no_error(model_custom$estimate())
-
-    expect_equal(model_default$ICL, model_custom$ICL, tolerance = 1e-10)
-    k <- which.max(model_default$ICL)
-    expect_equal(model_default$model_parameters[[k]]$m, model_custom$model_parameters[[k]]$m, tolerance = 1e-10)
-    expect_equal(model_default$model_parameters[[k]]$beta, model_custom$model_parameters[[k]]$beta, tolerance = 1e-10)
+    model <- BM_bernoulli_covariates_fast("SBM", M, list(Y1, Y2), plotting = "", explore_min = 2, explore_max = 2, ncores = 1, verbosity = 0)
+    expect_no_error(model$estimate())
 })

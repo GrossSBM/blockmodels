@@ -47,7 +47,7 @@ test_that("BM_gaussian_covariates LBM estimation runs", {
   expect_model_estimation(model)
 })
 
-test_that("BM_gaussian_covariates SBM handles partial NA and is invariant to na_replace_value", {
+test_that("BM_gaussian_covariates SBM handles partial NA", {
   set.seed(131)
 
   npc <- 10
@@ -63,16 +63,6 @@ test_that("BM_gaussian_covariates SBM handles partial NA and is invariant to na_
   M[sample(off_diag, max(1, floor(0.05 * length(off_diag))))] <- NA_real_
 
   set.seed(133)
-  model_default <- BM_gaussian_covariates("SBM", M, list(Y1), na_replace_value = 0, plotting = "", explore_min = 2, explore_max = 2, ncores = 1, verbosity = 0)
-  expect_no_error(model_default$estimate())
-
-  set.seed(133)
-  model_custom <- BM_gaussian_covariates("SBM", M, list(Y1), na_replace_value = -123, plotting = "", explore_min = 2, explore_max = 2, ncores = 1, verbosity = 0)
-  expect_no_error(model_custom$estimate())
-
-  expect_equal(model_default$ICL, model_custom$ICL, tolerance = 1e-10)
-  k <- which.max(model_default$ICL)
-  expect_equal(model_default$model_parameters[[k]]$mu, model_custom$model_parameters[[k]]$mu, tolerance = 1e-10)
-  expect_equal(model_default$model_parameters[[k]]$beta, model_custom$model_parameters[[k]]$beta, tolerance = 1e-10)
-  expect_equal(model_default$model_parameters[[k]]$sigma2, model_custom$model_parameters[[k]]$sigma2, tolerance = 1e-10)
+  model <- BM_gaussian_covariates("SBM", M, list(Y1), plotting = "", explore_min = 2, explore_max = 2, ncores = 1, verbosity = 0)
+  expect_no_error(model$estimate())
 })

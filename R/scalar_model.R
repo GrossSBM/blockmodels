@@ -2,22 +2,12 @@ setRefClass("scalar_model",
     contains = "model",
     fields = list(
         adj = "matrix",
-        nodes_covariates = "list",
-        na_replace_value = "numeric"
+        nodes_covariates = "list"
     ),
     methods = list(
         postinit = function()
         {
             callSuper()
-
-            if (length(na_replace_value) == 0)
-            {
-                na_replace_value <<- 0
-            }
-            if (length(na_replace_value) != 1 || !is.finite(na_replace_value))
-            {
-                stop("na_replace_value must be a single finite numeric value.")
-            }
 
             if(membership_name=="SBM" || membership_name=="SBM_sym")
             {
@@ -82,7 +72,7 @@ setRefClass("scalar_model",
         {
             paste(nrow(adj),"x",ncol(adj),"scalar network")
         },  
-        network_to_cc = function() { list(adjacency = adj, na_replace_value = na_replace_value) },
+        network_to_cc = function() { list(adjacency = adj) },
         split_membership_model = function(Q)
         {
             membership <- memberships[[Q]]

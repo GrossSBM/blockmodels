@@ -51,16 +51,11 @@ class bernoulli_covariates
              * covariate on all edges.
              */
             mat adj_orig = Rcpp::as<mat>(network_from_R["adjacency"]);
-            double na_replace_value = 0;
-            if(network_from_R.containsElementNamed("na_replace_value"))
-            {
-                na_replace_value = Rcpp::as<double>(network_from_R["na_replace_value"]);
-            }
 
             maskNA = compute_mask(adj_orig);
 
 
-            adj = replace_missing_values(adj_orig, na_replace_value) % maskNA; // Replacing the missing values and applying mask (results in zeroes anyways but kept for ensuring correct masking) 
+            adj = replace_missing_values(adj_orig) % maskNA; // Replacing the missing values and applying mask (results in zeroes anyways but kept for ensuring correct masking) 
 
             Rcpp::List covariates_list = network_from_R["covariates"];
             covariates.set_size(adj.n_rows,adj.n_cols,covariates_list.size());
