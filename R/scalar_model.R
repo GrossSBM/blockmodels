@@ -334,9 +334,11 @@ setRefClass("scalar_model",
         plot_transform = function(x){x},
         residual = function(Q)
         {
-            non_na_adj <- adj
-            non_na_adj[is.na(adj)] <- 0
-            non_na_adj-.self$prediction(Q)
+            # null residuals on the missing entries: they must not drive the
+            # initializations (spectral clustering and splits of the groups)
+            res <- adj-.self$prediction(Q)
+            res[is.na(res)] <- 0
+            res
         }
 
             
