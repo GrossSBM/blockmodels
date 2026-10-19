@@ -9,7 +9,6 @@ class poisson
         mat adj; // adjacency matrix
         
         mat maskNA;
-        mat maskNAt;
 
         // precalculated matrices for SBM
         mat adjZD;
@@ -32,7 +31,6 @@ class poisson
 
             maskNA = compute_mask(adj_orig);
 
-            maskNAt = maskNA.t();
 
             adj = replace_missing_values(adj_orig) % maskNA; // Replace NAs to perform computation and apply mask
             adjt = adj.t();

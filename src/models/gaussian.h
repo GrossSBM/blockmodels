@@ -23,7 +23,6 @@ class gaussian
         mat adj;
 
         mat maskNA;
-        mat maskNAt;
 
         //precomputed matrix for SBM
         mat adjZD;
@@ -65,18 +64,19 @@ class gaussian
 
             maskNA = compute_mask(adj_orig);
 
-            maskNAt = maskNA.t();
 
-            adj = replace_missing_values(adj_orig); // Replace NAs to perform
+            // missing entries are set to 0 in all the precomputed matrices, so
+            // that they do not contribute to the computations
+            adj = replace_missing_values(adj_orig);
             adjZD = fill_diag(adj,0);
             adjt = adj.t();
-            Mones = ones<mat>(adj.n_rows,adj.n_cols);
+            Mones = maskNA;
             Monest = Mones.t();
             adjZDt = adjZD.t();
             MonesZD = fill_diag(Mones,0);
 
-            accu_adj_square = accu( (adj%maskNA)% adj );
-            accu_adjZD_square = accu( (adjZD%maskNA) % adjZD );
+            accu_adj_square = accu( adj % adj );
+            accu_adjZD_square = accu( adjZD % adjZD );
         }
     };
 
@@ -185,10 +185,10 @@ void e_fixed_step(SBM & membership,
                   mat & lZ)
 {
     lZ += 1.0/(2*model.sigma2) * (
-            - (net.MonesZD%net.maskNA) * membership.Z * (model.mu.t() % model.mu.t())
-            + 2 * (net.adjZD%net.maskNA) * membership.Z * model.mu.t()
-            - (net.MonesZD%net.maskNA) * membership.Z * (model.mu % model.mu)
-            + 2 * (net.adjZDt%net.maskNAt) * membership.Z * model.mu
+            - net.MonesZD * membership.Z * (model.mu.t() % model.mu.t())
+            + 2 * net.adjZD * membership.Z * model.mu.t()
+            - net.MonesZD * membership.Z * (model.mu % model.mu)
+            + 2 * net.adjZDt * membership.Z * model.mu
         );
 }
 
@@ -214,8 +214,8 @@ void e_fixed_step(SBM_sym & membership,
                   mat & lZ)
 {
     lZ  += 1.0/(2*model.sigma2) * (
-            - (net.MonesZD%net.maskNA) * membership.Z * (model.mu % model.mu)
-            + 2 * (net.adjZD%net.maskNA) * membership.Z * model.mu
+            - net.MonesZD * membership.Z * (model.mu % model.mu)
+            + 2 * net.adjZD * membership.Z * model.mu
         );
 }
 
@@ -243,12 +243,12 @@ void e_fixed_step(LBM & membership,
                   mat & lZ2)
 {
     lZ1 += 1.0/(2*model.sigma2) * (
-            - (net.Mones%net.maskNA) * membership.Z2 * (model.mu.t() % model.mu.t())
-            + 2 * (net.adj%net.maskNA) * membership.Z2 * model.mu.t()
+            - net.Mones * membership.Z2 * (model.mu.t() % model.mu.t())
+            + 2 * net.adj * membership.Z2 * model.mu.t()
         );
     lZ2 += 1.0/(2*model.sigma2) * (
-            - (net.Monest%net.maskNAt) * membership.Z1 * (model.mu % model.mu)
-            + 2 * (net.adjt%net.maskNAt) * membership.Z1 * model.mu
+            - net.Monest * membership.Z1 * (model.mu % model.mu)
+            + 2 * net.adjt * membership.Z1 * model.mu
         );
 }
 
@@ -273,21 +273,22 @@ double m_step(SBM & membership,
               gaussian & model,
               gaussian::network & net)
 {
-    model.mu = (membership.Z.t() * (net.adjZD%net.maskNA) * membership.Z)
-                /
-               (membership.Z.t() * (net.MonesZD%net.maskNA) * membership.Z);
+    mat ZtAZ = membership.Z.t() * net.adjZD * membership.Z;
+    mat ZtOZ = membership.Z.t() * net.MonesZD * membership.Z;
+
+    model.mu = ZtAZ / ZtOZ;
     
     double all_accu_except_square_adj = accu(
             (
                 (model.mu % model.mu)
                 %
-                (membership.Z.t() * (net.MonesZD%net.maskNA) * membership.Z)
+                ZtOZ
             )
             -
             (
                 2 * model.mu
                 %
-                (membership.Z.t() * (net.adjZD%net.maskNA) * membership.Z)
+                ZtAZ
             )
         );
 
@@ -347,21 +348,22 @@ double m_step(LBM & membership,
               gaussian & model,
               gaussian::network & net)
 {
-    model.mu = (membership.Z1.t() * (net.adj%net.maskNA) * membership.Z2)
-                /
-               (membership.Z1.t() * (net.Mones%net.maskNA) * membership.Z2);
+    mat ZtAZ = membership.Z1.t() * net.adj * membership.Z2;
+    mat ZtOZ = membership.Z1.t() * net.Mones * membership.Z2;
+
+    model.mu = ZtAZ / ZtOZ;
     
     double all_accu_except_square_adj = accu(
             (
                 (model.mu % model.mu)
                 %
-                (membership.Z1.t() * (net.Mones%net.maskNA) * membership.Z2)
+                ZtOZ
             )
             -
             (
                 2 * model.mu
                 %
-                (membership.Z1.t() * (net.adj%net.maskNA) * membership.Z2)
+                ZtAZ
             )
         );
 
