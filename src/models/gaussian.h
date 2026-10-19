@@ -38,6 +38,10 @@ class gaussian
         //precomputed value for likilhood
         double accu_adj_square;
         double accu_adjZD_square;
+
+        // number of observed (non NA) entries, without the diagonal for ZD
+        double nb_obs;
+        double nb_obsZD;
         
 
 
@@ -77,6 +81,9 @@ class gaussian
 
             accu_adj_square = accu( adj % adj );
             accu_adjZD_square = accu( adjZD % adjZD );
+
+            nb_obs = accu(Mones);
+            nb_obsZD = accu(MonesZD);
         }
     };
 
@@ -292,13 +299,13 @@ double m_step(SBM & membership,
             )
         );
 
-    model.sigma2 = 1.0/(membership.Z.n_rows * membership.Z.n_rows) * (
+    model.sigma2 = 1.0/net.nb_obsZD * (
             net.accu_adjZD_square + all_accu_except_square_adj
         );
 
     return
         (
-            -.5*(membership.Z.n_rows * (membership.Z.n_rows-1))*log(2*M_PI*model.sigma2)
+            -.5*net.nb_obsZD*log(2*M_PI*model.sigma2)
             -1.0/(2*model.sigma2)*(net.accu_adjZD_square + all_accu_except_square_adj)
         );
 }
@@ -367,13 +374,13 @@ double m_step(LBM & membership,
             )
         );
 
-    model.sigma2 = 1.0/(membership.Z1.n_rows * membership.Z2.n_rows) * (
+    model.sigma2 = 1.0/net.nb_obs * (
             net.accu_adj_square + all_accu_except_square_adj
         );
 
     return
         (
-            -.5*(membership.Z1.n_rows*membership.Z2.n_rows)*log(2*M_PI*model.sigma2)
+            -.5*net.nb_obs*log(2*M_PI*model.sigma2)
             -1.0/(2*model.sigma2)*(net.accu_adj_square + all_accu_except_square_adj)
         );
 }

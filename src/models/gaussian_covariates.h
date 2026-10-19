@@ -35,6 +35,10 @@ class gaussian_covariates
         mat Mones;
         mat Monest;
 
+        // number of observed (non NA) entries, without the diagonal for ZD
+        double nb_obs;
+        double nb_obsZD;
+
 
         network(Rcpp::List & network_from_R)
         {
@@ -66,6 +70,9 @@ class gaussian_covariates
             Mones = maskNA;//ones<mat>(adj.n_rows,adj.n_cols);
             MonesZD = fill_diag(Mones,0);
             Monest = Mones.t();
+
+            nb_obs = accu(Mones);
+            nb_obsZD = accu(MonesZD);
         }
     };
 
@@ -91,8 +98,8 @@ class gaussian_covariates
         beta.set_size(net.covariates.n_slices);
         beta.fill(0);
 
-        mat diff = fill_diag(membership.Z * mu * membership.Z.t() - net.adj,0);
-        sigma2 = accu(diff % diff)/((membership.Z.n_rows-1)*membership.Z.n_rows);
+        mat diff = fill_diag(membership.Z * mu * membership.Z.t() - net.adj,0) % net.maskNA;
+        sigma2 = accu(diff % diff)/net.nb_obsZD;
 
         n_parameters = mu.n_elem + beta.n_elem + 1;
         symmetric = false;
@@ -112,8 +119,8 @@ class gaussian_covariates
         beta.set_size(net.covariates.n_slices);
         beta.fill(0);
         
-        mat diff = fill_diag(membership.Z * mu * membership.Z.t() - net.adj,0);
-        sigma2 = accu(diff % diff)/((membership.Z.n_rows-1)*membership.Z.n_rows);
+        mat diff = fill_diag(membership.Z * mu * membership.Z.t() - net.adj,0) % net.maskNA;
+        sigma2 = accu(diff % diff)/net.nb_obsZD;
 
         n_parameters = mu.n_rows*(mu.n_rows+1)/2 + beta.n_elem + 1;
         symmetric = true;
@@ -133,8 +140,8 @@ class gaussian_covariates
         beta.set_size(net.covariates.n_slices);
         beta.fill(0);
         
-        mat diff = membership.Z1 * mu * membership.Z2.t() - net.adj;
-        sigma2 = accu(diff % diff)/(membership.Z1.n_rows*membership.Z2.n_rows);
+        mat diff = (membership.Z1 * mu * membership.Z2.t() - net.adj) % net.maskNA;
+        sigma2 = accu(diff % diff)/net.nb_obs;
 
         n_parameters = mu.n_elem + beta.n_elem + 1;
         symmetric = false;
@@ -220,7 +227,7 @@ void e_fixed_step(SBM & membership,
                   gaussian_covariates::network & net,
                   mat & lZ)
 {
-    mat adjmBZD = fill_diag(net.adj-gaussian_covariates_compute_B(model.beta,net.covariates),0);
+    mat adjmBZD = fill_diag((net.adj-gaussian_covariates_compute_B(model.beta,net.covariates)) % net.maskNA,0);
     lZ += 1.0/(2*model.sigma2) * (
             - net.MonesZD * membership.Z * (model.mu.t() % model.mu.t())
             + 2 * adjmBZD * membership.Z * model.mu.t()
@@ -250,7 +257,7 @@ void e_fixed_step(SBM_sym & membership,
                   gaussian_covariates::network & net,
                   mat & lZ)
 {
-    mat adjmBZD = fill_diag(net.adj-gaussian_covariates_compute_B(model.beta,net.covariates),0);
+    mat adjmBZD = fill_diag((net.adj-gaussian_covariates_compute_B(model.beta,net.covariates)) % net.maskNA,0);
     lZ  += 1.0/(2*model.sigma2) * (
             - adjmBZD * membership.Z * (model.mu % model.mu)
             + 2 * net.adjZD * membership.Z * model.mu
@@ -281,7 +288,7 @@ void e_fixed_step(LBM & membership,
                   mat & lZ1,
                   mat & lZ2)
 {
-    mat adjmB = net.adj-gaussian_covariates_compute_B(model.beta,net.covariates);
+    mat adjmB = (net.adj-gaussian_covariates_compute_B(model.beta,net.covariates)) % net.maskNA;
     lZ1 += 1.0/(2*model.sigma2) * (
             - net.Mones * membership.Z2 * (model.mu.t() % model.mu.t())
             + 2 * adjmB * membership.Z2 * model.mu.t()
@@ -383,9 +390,9 @@ double PL(gaussian_covariates & model,
           SBM & membership,
           gaussian_covariates::network & net)
 {
-    mat adjmBZD = fill_diag(net.adj-gaussian_covariates_compute_B(model.beta,net.covariates),0);
+    mat adjmBZD = fill_diag((net.adj-gaussian_covariates_compute_B(model.beta,net.covariates)) % net.maskNA,0);
     return(
-            -.5*(membership.Z.n_rows * (membership.Z.n_rows-1))*log(2*M_PI*model.sigma2)
+            -.5*net.nb_obsZD*log(2*M_PI*model.sigma2)
             -1.0/(2*model.sigma2)*(
                 accu(
                     adjmBZD % adjmBZD
@@ -431,9 +438,9 @@ double PL(gaussian_covariates & model,
           SBM_sym & membership,
           gaussian_covariates::network & net)
 {
-    mat adjmBZD = fill_diag(net.adj-gaussian_covariates_compute_B(model.beta,net.covariates),0);
+    mat adjmBZD = fill_diag((net.adj-gaussian_covariates_compute_B(model.beta,net.covariates)) % net.maskNA,0);
     return( .5*(
-            -.5*(membership.Z.n_rows * (membership.Z.n_rows-1))*log(2*M_PI*model.sigma2)
+            -.5*net.nb_obsZD*log(2*M_PI*model.sigma2)
             -1.0/(2*model.sigma2)*(
                 accu(
                     adjmBZD % adjmBZD
@@ -478,9 +485,9 @@ double PL(gaussian_covariates & model,
           LBM & membership,
           gaussian_covariates::network & net)
 {
-    mat adjmB = net.adj-gaussian_covariates_compute_B(model.beta,net.covariates);
+    mat adjmB = (net.adj-gaussian_covariates_compute_B(model.beta,net.covariates)) % net.maskNA;
     return(
-            -.5*(membership.Z1.n_rows * membership.Z2.n_rows)*log(2*M_PI*model.sigma2)
+            -.5*net.nb_obs*log(2*M_PI*model.sigma2)
             -1.0/(2*model.sigma2)*(
                 accu(
                     adjmB % adjmB
@@ -677,7 +684,7 @@ vec grad(gaussian_covariates & model,
          SBM & membership,
          gaussian_covariates::network & net)
 {
-    mat adjmBZD = fill_diag(net.adj-gaussian_covariates_compute_B(model.beta,net.covariates),0);
+    mat adjmBZD = fill_diag((net.adj-gaussian_covariates_compute_B(model.beta,net.covariates)) % net.maskNA,0);
     mat dmu = 1.0/model.sigma2 *
         (
             membership.Z.t() * adjmBZD * membership.Z
@@ -693,6 +700,8 @@ vec grad(gaussian_covariates & model,
                    ) % adjmBZD)
             ,0);
 
+    M %= net.maskNA;
+
     vec dbeta(model.beta.n_elem);
     for(unsigned int k=0;k<dbeta.n_elem;k++)
     {
@@ -700,7 +709,7 @@ vec grad(gaussian_covariates & model,
     }
 
     double dsigma2 =
-            -.5*(membership.Z.n_rows * (membership.Z.n_rows-1))/model.sigma2
+            -.5*net.nb_obsZD/model.sigma2
             +1.0/(2*model.sigma2*model.sigma2)*(
                 accu(
                     adjmBZD % adjmBZD
@@ -752,7 +761,7 @@ vec grad(gaussian_covariates & model,
          SBM_sym & membership,
          gaussian_covariates::network & net)
 {
-    mat adjmBZD = fill_diag(net.adj-gaussian_covariates_compute_B(model.beta,net.covariates),0);
+    mat adjmBZD = fill_diag((net.adj-gaussian_covariates_compute_B(model.beta,net.covariates)) % net.maskNA,0);
     mat dmu = 1.0/model.sigma2 *
         (
             membership.Z.t() * adjmBZD * membership.Z
@@ -768,6 +777,8 @@ vec grad(gaussian_covariates & model,
                    ) % adjmBZD)
             ,0);
 
+    M %= net.maskNA;
+
     vec dbeta(model.beta.n_elem);
     for(unsigned int k=0;k<dbeta.n_elem;k++)
     {
@@ -775,7 +786,7 @@ vec grad(gaussian_covariates & model,
     }
 
     double dsigma2 =
-            -.5*(membership.Z.n_rows * (membership.Z.n_rows-1))/model.sigma2
+            -.5*net.nb_obsZD/model.sigma2
             +1.0/(2*model.sigma2*model.sigma2)*(
                 accu(
                     adjmBZD % adjmBZD
@@ -827,7 +838,7 @@ vec grad(gaussian_covariates & model,
          LBM & membership,
          gaussian_covariates::network & net)
 {
-    mat adjmB = net.adj-gaussian_covariates_compute_B(model.beta,net.covariates);
+    mat adjmB = (net.adj-gaussian_covariates_compute_B(model.beta,net.covariates)) % net.maskNA;
     mat dmu = 1.0/model.sigma2 *
         (
             membership.Z1.t() * adjmB * membership.Z2
@@ -841,6 +852,8 @@ vec grad(gaussian_covariates & model,
                         * membership.Z2.t()
                    ) % adjmB));
 
+    M %= net.maskNA;
+
     vec dbeta(model.beta.n_elem);
     for(unsigned int k=0;k<dbeta.n_elem;k++)
     {
@@ -848,7 +861,7 @@ vec grad(gaussian_covariates & model,
     }
 
     double dsigma2 =
-            -.5*(membership.Z1.n_rows * membership.Z2.n_rows)/model.sigma2
+            -.5*net.nb_obs/model.sigma2
             +1.0/(2*model.sigma2*model.sigma2)*(
                 accu(
                     adjmB % adjmB
