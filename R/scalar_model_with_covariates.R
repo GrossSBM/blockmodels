@@ -17,6 +17,11 @@ setRefClass("scalar_model_with_covariates",
                     stop(paste('The covariates matrix',i,'does not have the same size than the adjacency matrix.',
                                'Vim divinam est.'))
                 }
+                if(anyNA(covariates[[i]]))
+                {
+                    stop(paste('The covariates matrix',i,'contains missing values (NA), which are not supported.',
+                               'Only the adjacency matrix may contain NA.'))
+                }
             }
 
             if(membership_name=='SBM_sym')

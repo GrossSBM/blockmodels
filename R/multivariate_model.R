@@ -26,6 +26,13 @@ setRefClass("multivariate_model",
                            "Inanis vacuum est."))
             }
 
+            if(any(vapply(adj, anyNA, logical(1))))
+            {
+                stop(paste("Missing values (NA) in the adjacency matrices are not supported",
+                           "for multivariate models. They are only supported for scalar",
+                           "models (bernoulli, poisson, gaussian, with or without covariates)."))
+            }
+
             for(i in 1:length(adj))
             {
                 if(!all(dim(adj[[1]])==dim(adj[[i]])) || length(dim(adj[[i]]))!=2)
