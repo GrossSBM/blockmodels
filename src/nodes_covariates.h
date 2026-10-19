@@ -119,11 +119,10 @@ mat optimize_softmax(
     int no_h_iter = 0;
     #endif
 
-    // only R-1 columns optimized
-    mat Btilde(p, q);
+    mat Btilde(p, q); // only R-1 columns optimized
     mat grad;
 
-    // the reference group is the last one (null column in build_full_B),
+    // the reference group is the last one,
     // the free parameters are the first q columns
     Btilde = approx_B(X, T).cols(0, q - 1);
 
