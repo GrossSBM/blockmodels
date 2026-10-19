@@ -20,8 +20,8 @@ Suggests:
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Encoding: UTF-8
-URL: https://github.com/jb-leger/blockmodels
-BugReports: https://github.com/jb-leger/blockmodels/issues
+URL: https://github.com/GrossSBM/blockmodels
+BugReports: https://github.com/GrossSBM/blockmodels/issues
 Authors@R: c(
     person("Jean-Benoist", "Leger", , "jbleger@hds.utc.fr", role = c("aut", "cre")),
     person("Pierre", "Barbillon", , "pierre.barbillon@agroparistech.fr", role = "aut"),

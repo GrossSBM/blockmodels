@@ -1,5 +1,5 @@
 
-test_that("BM_bernoulli_multiplex SBM handles partial NA and is invariant to na_replace_value", {
+test_that("BM_bernoulli_multiplex SBM handles partial NA", {
   skip("To be implemented in the future.")
   set.seed(141)
   npc <- 10
@@ -28,19 +28,11 @@ test_that("BM_bernoulli_multiplex SBM handles partial NA and is invariant to na_
   M2[idx] <- NA_real_
 
   set.seed(143)
-  model_default <- BM_bernoulli_multiplex("SBM", list(M1, M2), na_replace_value = 0, plotting = "", explore_min = 2, explore_max = 2, ncores = 1, verbosity = 0)
-  expect_no_error(model_default$estimate())
-
-  set.seed(143)
-  model_custom <- BM_bernoulli_multiplex("SBM", list(M1, M2), na_replace_value = 17, plotting = "", explore_min = 2, explore_max = 2, ncores = 1, verbosity = 0)
-  expect_no_error(model_custom$estimate())
-
-  expect_equal(model_default$ICL, model_custom$ICL, tolerance = 1e-10)
-  k <- which.max(model_default$ICL)
-  expect_equal(model_default$model_parameters[[k]]$pi, model_custom$model_parameters[[k]]$pi, tolerance = 1e-10)
+  model <- BM_bernoulli_multiplex("SBM", list(M1, M2), plotting = "", explore_min = 2, explore_max = 2, ncores = 1, verbosity = 0)
+  expect_no_error(model$estimate())
 })
 
-test_that("BM_gaussian_multivariate SBM handles partial NA and is invariant to na_replace_value", {
+test_that("BM_gaussian_multivariate SBM handles partial NA", {
   skip("To be implemented in the future.")
   set.seed(151)
 
@@ -62,20 +54,11 @@ test_that("BM_gaussian_multivariate SBM handles partial NA and is invariant to n
   M2[idx] <- NA_real_
 
   set.seed(153)
-  model_default <- BM_gaussian_multivariate("SBM", list(M1, M2), na_replace_value = 0, plotting = "", explore_min = 2, explore_max = 2, ncores = 1, verbosity = 0)
-  expect_no_error(model_default$estimate())
-
-  set.seed(153)
-  model_custom <- BM_gaussian_multivariate("SBM", list(M1, M2), na_replace_value = -456, plotting = "", explore_min = 2, explore_max = 2, ncores = 1, verbosity = 0)
-  expect_no_error(model_custom$estimate())
-
-  expect_equal(model_default$ICL, model_custom$ICL, tolerance = 1e-10)
-  k <- which.max(model_default$ICL)
-  expect_equal(model_default$model_parameters[[k]]$mu, model_custom$model_parameters[[k]]$mu, tolerance = 1e-10)
-  expect_equal(model_default$model_parameters[[k]]$Sigma, model_custom$model_parameters[[k]]$Sigma, tolerance = 1e-10)
+  model <- BM_gaussian_multivariate("SBM", list(M1, M2), plotting = "", explore_min = 2, explore_max = 2, ncores = 1, verbosity = 0)
+  expect_no_error(model$estimate())
 })
 
-test_that("BM_gaussian_multivariate_independent SBM handles partial NA and is invariant to na_replace_value", {
+test_that("BM_gaussian_multivariate_independent SBM handles partial NA", {
   skip("To be implemented in the future.")
   set.seed(161)
 
@@ -95,20 +78,11 @@ test_that("BM_gaussian_multivariate_independent SBM handles partial NA and is in
   M2[idx] <- NA_real_
 
   set.seed(163)
-  model_default <- BM_gaussian_multivariate_independent("SBM", list(M1, M2), na_replace_value = 0, plotting = "", explore_min = 2, explore_max = 2, ncores = 1, verbosity = 0)
-  expect_no_error(model_default$estimate())
-
-  set.seed(163)
-  model_custom <- BM_gaussian_multivariate_independent("SBM", list(M1, M2), na_replace_value = 73, plotting = "", explore_min = 2, explore_max = 2, ncores = 1, verbosity = 0)
-  expect_no_error(model_custom$estimate())
-
-  expect_equal(model_default$ICL, model_custom$ICL, tolerance = 1e-10)
-  k <- which.max(model_default$ICL)
-  expect_equal(model_default$model_parameters[[k]]$mu, model_custom$model_parameters[[k]]$mu, tolerance = 1e-10)
-  expect_equal(model_default$model_parameters[[k]]$sigma2, model_custom$model_parameters[[k]]$sigma2, tolerance = 1e-10)
+  model <- BM_gaussian_multivariate_independent("SBM", list(M1, M2), plotting = "", explore_min = 2, explore_max = 2, ncores = 1, verbosity = 0)
+  expect_no_error(model$estimate())
 })
 
-test_that("BM_gaussian_multivariate_independent_homoscedastic SBM handles partial NA and is invariant to na_replace_value", {
+test_that("BM_gaussian_multivariate_independent_homoscedastic SBM handles partial NA", {
   skip("To be implemented in the future.")
   set.seed(171)
 
@@ -128,17 +102,8 @@ test_that("BM_gaussian_multivariate_independent_homoscedastic SBM handles partia
   M2[idx] <- NA_real_
 
   set.seed(173)
-  model_default <- BM_gaussian_multivariate_independent_homoscedastic("SBM", list(M1, M2), na_replace_value = 0, plotting = "", explore_min = 2, explore_max = 2, ncores = 1, verbosity = 0)
-  expect_no_error(model_default$estimate())
-
-  set.seed(173)
-  model_custom <- BM_gaussian_multivariate_independent_homoscedastic("SBM", list(M1, M2), na_replace_value = -1e6, plotting = "", explore_min = 2, explore_max = 2, ncores = 1, verbosity = 0)
-  expect_no_error(model_custom$estimate())
-
-  expect_equal(model_default$ICL, model_custom$ICL, tolerance = 1e-10)
-  k <- which.max(model_default$ICL)
-  expect_equal(model_default$model_parameters[[k]]$mu, model_custom$model_parameters[[k]]$mu, tolerance = 1e-10)
-  expect_equal(model_default$model_parameters[[k]]$sigma2, model_custom$model_parameters[[k]]$sigma2, tolerance = 1e-10)
+  model <- BM_gaussian_multivariate_independent_homoscedastic("SBM", list(M1, M2), plotting = "", explore_min = 2, explore_max = 2, ncores = 1, verbosity = 0)
+  expect_no_error(model$estimate())
 })
 
 test_that("Gaussian multivariate SBM models fail gracefully when all values are NA", {
@@ -155,4 +120,37 @@ test_that("Gaussian multivariate SBM models fail gracefully when all values are 
 
   model_mvih <- BM_gaussian_multivariate_independent_homoscedastic("SBM", list(M1, M2), plotting = "", explore_min = 2, explore_max = 2, ncores = 1, verbosity = 0)
   expect_error(model_mvih$estimate(), "No valid edges in adjacency matrix. They are all NAs\\.")
+})
+test_that("Multivariate models reject NA in the adjacency matrices with an explicit error", {
+  n <- 10
+  M1 <- matrix(rnorm(n * n), n, n)
+  M2 <- matrix(rnorm(n * n), n, n)
+  M1[3, 4] <- NA
+  B1 <- 1 * (M1 > 0)
+  B2 <- 1 * (M2 > 0)
+
+  for (model_class in c("BM_gaussian_multivariate", "BM_gaussian_multivariate_independent", "BM_gaussian_multivariate_independent_homoscedastic")) {
+    expect_error(
+      get(model_class)("SBM", list(M1, M2), plotting = "", ncores = 1, verbosity = 0),
+      "not supported for multivariate models"
+    )
+  }
+  expect_error(
+    BM_bernoulli_multiplex("SBM", list(B1, B2), plotting = "", ncores = 1, verbosity = 0),
+    "not supported for multivariate models"
+  )
+})
+
+test_that("Models with covariates reject NA in the covariates with an explicit error", {
+  n <- 10
+  M <- 1 * (matrix(runif(n * n), n, n) < 0.3)
+  C <- matrix(rnorm(n * n), n, n)
+  C[2, 7] <- NA
+
+  for (model_class in c("BM_bernoulli_covariates", "BM_bernoulli_covariates_fast", "BM_poisson_covariates", "BM_gaussian_covariates")) {
+    expect_error(
+      get(model_class)("SBM", M, list(C), plotting = "", ncores = 1, verbosity = 0),
+      "contains missing values"
+    )
+  }
 })

@@ -87,7 +87,12 @@ setRefClass("SBM_sym",
         },
         ICL_penalty = function()
         {
-            (dim(Z)[2]-1)*log(dim(Z)[1])
+            if (length(B) > 0) {
+                p <- nrow(B)
+            } else {
+                p <- 1
+            }
+            p * (dim(Z)[2]-1)*log(dim(Z)[1])
         },
         merges = function()
         {

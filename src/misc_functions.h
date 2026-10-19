@@ -187,8 +187,9 @@ mat compute_mask(mat A) {
 }
 
 inline
-mat replace_missing_values(mat A, double value)
+mat replace_missing_values(mat A)
 {
-    A.elem(find_nonfinite(A)).fill(value);
+    // the missing entries are masked in the computations: their value does not matter
+    A.elem(find_nonfinite(A)).zeros();
     return(A);
 }
