@@ -114,6 +114,7 @@ mat optimize_softmax(
     int q = R - 1;
     int nparam = p * q;
     int last_iter = 0;
+    bool converged = false;
     #ifdef DEBUG_M
     int no_h_iter = 0;
     #endif
@@ -122,7 +123,9 @@ mat optimize_softmax(
     mat Btilde(p, q);
     mat grad;
 
-    Btilde = approx_B(X, T).cols(1,q);
+    // the reference group is the last one (null column in build_full_B),
+    // the free parameters are the first q columns
+    Btilde = approx_B(X, T).cols(0, q - 1);
 
     double L = objective_gradient(X, T, Btilde, grad);
 
@@ -145,7 +148,10 @@ mat optimize_softmax(
 
 
         if (norm(g, 2) < TOL_NODE_COV)
+        {
+            converged = true;
             break;
+        }
 
         vec d = H * g; // ascent direction (maximize)
 
@@ -209,11 +215,11 @@ mat optimize_softmax(
         L = Lnew;
         last_iter = iter;
 
-        if (rel_obj_diff < TOL_NODE_COV)
+        if (rel_obj_diff < TOL_NODE_COV_REL || norm(gnew, 2) < TOL_NODE_COV)
+        {
+            converged = true;
             break;
-
-        if (norm(gnew, 2) < TOL_NODE_COV)
-            break;
+        }
         #ifdef DEBUG_M
         if (iter <= 10  || iter == BFGS_ITER_MAX - 1) {
         Rcpp::Rcout << "Iteration " << iter + 1 << "/" << BFGS_ITER_MAX << ": L = " << Lnew << endl;
@@ -226,8 +232,8 @@ mat optimize_softmax(
         #endif
     }
 
-    if (last_iter >= BFGS_ITER_MAX) {
-        Rcpp::warning("Optimization for nodes covariates did not converge after %i steps.", last_iter);
+    if (!converged && last_iter == BFGS_ITER_MAX - 1) {
+        Rcpp::warning("Optimization for nodes covariates did not converge after %i steps.", BFGS_ITER_MAX);
     }
 
     return build_full_B(Btilde);
