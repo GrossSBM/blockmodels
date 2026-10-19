@@ -1,0 +1,20 @@
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>/404.html</loc></url>
+<url><loc>/LICENSE-text.html</loc></url>
+<url><loc>/authors.html</loc></url>
+<url><loc>/index.html</loc></url>
+<url><loc>/news/index.html</loc></url>
+<url><loc>/reference/BM_bernoulli.html</loc></url>
+<url><loc>/reference/BM_bernoulli_covariates.html</loc></url>
+<url><loc>/reference/BM_bernoulli_covariates_fast.html</loc></url>
+<url><loc>/reference/BM_bernoulli_multiplex.html</loc></url>
+<url><loc>/reference/BM_gaussian.html</loc></url>
+<url><loc>/reference/BM_gaussian_covariates.html</loc></url>
+<url><loc>/reference/BM_gaussian_multivariate.html</loc></url>
+<url><loc>/reference/BM_gaussian_multivariate_independent.html</loc></url>
+<url><loc>/reference/BM_gaussian_multivariate_independent_homoscedastic.html</loc></url>
+<url><loc>/reference/BM_poisson.html</loc></url>
+<url><loc>/reference/BM_poisson_covariates.html</loc></url>
+<url><loc>/reference/index.html</loc></url>
+</urlset>
+
