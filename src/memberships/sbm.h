@@ -102,9 +102,8 @@ struct SBM
             alphamat = clamp(alphamat, MIN_VAL, 1.0 - MIN_VAL);
             alphamat /= repmat(sum(alphamat, 1), 1, alphamat.n_cols);
 
-            mat cross_Z_alpha = Z * log(alphamat).t();
-
-            return accu(cross_Z_alpha.diag());
+            // sum_i sum_q Z_iq log(alpha_iq), without the n x n matrix Z log(alpha)'
+            return accu(Z % log(alphamat));
         }
 
         alpha = sum(Z,0) / Z.n_rows;

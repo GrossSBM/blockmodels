@@ -39,26 +39,22 @@ BM_bernoulli_covariates <- setRefClass("BM_bernoulli_covariates",
             if(membership_name=='LBM')
             {
                 return(
-                    sigmo(
-                        memberships[[Q]]$Z1
-                        %*%
-                        model_parameters[[Q]]$m
-                        %*%
-                        t(memberships[[Q]]$Z2)
-                        + B
+                    bernoulli_covariates_prediction(
+                        memberships[[Q]]$Z1,
+                        memberships[[Q]]$Z2,
+                        model_parameters[[Q]]$m,
+                        B
                     )
                 )
             }
             else
             {
                 return(
-                    sigmo(
-                        memberships[[Q]]$Z
-                        %*%
-                        model_parameters[[Q]]$m
-                        %*%
-                        t(memberships[[Q]]$Z)
-                        + B
+                    bernoulli_covariates_prediction(
+                        memberships[[Q]]$Z,
+                        memberships[[Q]]$Z,
+                        model_parameters[[Q]]$m,
+                        B
                     )
                 )
             }
