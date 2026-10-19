@@ -15,4 +15,22 @@
   data are not used to update the parameters of the model. Multivariate
   models, and missing values in the edge covariates, now stop with an
   explicit error.
+- Gaussian models with `NA`: the variance and the likelihood now use the
+  number of observed entries, and the covariates of
+  `BM_gaussian_covariates` on the missing entries are ignored. The
+  residuals used for the initializations are null on the missing
+  entries.
+- `BM_gaussian` with SBM and SBM_sym memberships: the variance is now
+  the mean squared error over the n(n-1) entries out of the diagonal (it
+  was divided by n^2), consistently with the likelihood. Its estimate is
+  multiplied by n/(n-1) compared to the previous versions.
+- Fixed `prediction()` of `BM_bernoulli_covariates` and
+  `BM_bernoulli_covariates_fast`: the expected network is now the
+  expectation under the posterior probabilities, sum over (q,l) of
+  Z\[i,q\] Z\[j,l\] sigmo(m\[q,l\] + covariates effect), instead of
+  sigmo(Z m Z’ + covariates effect), which was exact only for indicator
+  memberships ([\#2](https://github.com/GrossSBM/blockmodels/issues/2)).
+  As the residuals guide the initializations by splitting groups, the
+  estimates of these models may slightly differ from the previous
+  versions.
 - Added a `NEWS.md` file to track changes to the package.
