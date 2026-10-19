@@ -95,3 +95,24 @@ install_membership_alpha_binding <- function(object_env, binding_name, z_field, 
         )
     }
 }
+
+# Expected adjacency of a bernoulli model with covariates, with posterior
+# probabilities Z1 (rows) and Z2 (columns):
+#   sum_{q,l} Z1[i,q] Z2[j,l] sigmo(m[q,l] + B[i,j])
+# sigmo(m + B) = 1/(1 + exp(-m)*exp(-B)), so exp() is computed once per entry.
+bernoulli_covariates_prediction <- function(Z1, Z2, m, B)
+{
+    expB <- exp(-B)
+    expm <- exp(-m)
+    P <- matrix(0, nrow(B), ncol(B))
+    for(l in seq_len(ncol(Z2)))
+    {
+        A <- 0
+        for(q in seq_len(ncol(Z1)))
+        {
+            A <- A + Z1[,q] / (1 + expm[q,l] * expB)
+        }
+        P <- P + A * rep(Z2[,l], each = nrow(B))
+    }
+    P
+}
