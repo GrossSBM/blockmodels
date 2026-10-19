@@ -157,10 +157,8 @@ struct LBM
             alpha1mat = clamp(alpha1mat, MIN_VAL, 1.0 - MIN_VAL);
             alpha1mat /= repmat(sum(alpha1mat, 1), 1, alpha1mat.n_cols);
 
-            // What we want to sum is the diagonal of the below matrix
-            // when we multiply pi_{i,q} and tau_{i,q} not tau_{j,q}
-            mat cross_Z1_alpha1 = Z1 * log(alpha1mat).t();
-            dim1_out = accu(cross_Z1_alpha1.diag());
+            // sum_i sum_q Z1_iq log(alpha1_iq), without the n1 x n1 matrix Z1 log(alpha1)'
+            dim1_out = accu(Z1 % log(alpha1mat));
         }
         else
         {
@@ -177,8 +175,7 @@ struct LBM
             alpha2mat = clamp(alpha2mat, MIN_VAL, 1.0 - MIN_VAL);
             alpha2mat /= repmat(sum(alpha2mat, 1), 1, alpha2mat.n_cols);
 
-            mat cross_Z2_alpha2 = Z2 * log(alpha2mat).t();
-            dim2_out = accu(cross_Z2_alpha2.diag());
+            dim2_out = accu(Z2 % log(alpha2mat));
         }
         else
         {
