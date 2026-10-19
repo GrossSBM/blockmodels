@@ -20,7 +20,7 @@ else
 
 
 $config{'MEMBERSHIP_ARG'} = "membership_type";
-$config{'MODEL_ARG'} = "verbosity=6,\n    autosave='',\n    plotting=character(0),\n    exploration_factor=1.5,\n    exploration_direction=numeric(0),\n    explore_min=4,\n    explore_max=Inf,\n    ncores=detectCores()";
+$config{'MODEL_ARG'} = "verbosity=6,\n    autosave='',\n    plotting=character(0),\n    exploration_factor=1.5,\n    exploration_direction=numeric(0),\n    explore_min=4,\n    explore_max=Inf,\n    ncores=detectCores(),\n    nodes_covariates=list()";
 $config{'SCALAR_MODEL_ARG'} = "adj";
 $config{'MULTIVARIATE_MODEL_ARG'} = "adj";
 
@@ -35,7 +35,8 @@ $config{'MODEL_ARG_ITEM'} =
     "\\item{explore_min}{Explore to the explore_min number of groups even if the exploration_factor rule is satisfied. By default 4. This parameter can be changed by accessing the field \$explore_min of the object.}\n".
     "\\item{explore_max}{Stop exploration after explore_max number of group in any case. By default Inf. This parameter can be changed by accessing the field \$explore_max of the object.}\n".
     "\\item{exploration_direction}{Only for LBM membership. Control the exploration direction for groups number. When provided, the exploring strategy is made to explore the provided group number. Must be a vector of two integer value representing the row group number and the column group number.}\n".
-    "\\item{ncores}{Number of parallel jobs to launch different EM intializations. By default detectCores(). This parameter can be changed by accessing the field \$ncores of the object. This parameters is used only on Linux. Parallism is disabled on other plateform. (Not working on Windows, not tested on Mac OS, not tested on *BSD.)}\n";
+    "\\item{ncores}{Number of parallel jobs to launch different EM intializations. By default detectCores(). This parameter can be changed by accessing the field \$ncores of the object. This parameters is used only on Linux. Parallism is disabled on other plateform. (Not working on Windows, not tested on Mac OS, not tested on *BSD.)}\n".
+    "\\item{nodes_covariates}{A list containing the (optional) nodes covariates. For SBM or SBM_sym, the list must contain one element named 'node', a matrix with as many rows as the number of nodes. For the LBM membership type, the list may contain one or two elements, named 'row' or 'col', the elements must be matrices with the number of rows corresponding to the number of nodes for the corresponding type of nodes (row or col).}";
 
 $config{'SCALAR_MODEL_ARG_ITEM'} =
     "\\item{adj}{The adjacency matrix}";

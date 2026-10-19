@@ -1,0 +1,84 @@
+set.seed(12)
+
+test_that("BM_bernoulli_covariates SBM estimation runs", {
+  npc <- 10
+  Q <- 2
+  n <- npc * Q
+  sigmo <- function(x) {
+    1 / (1 + exp(-x))
+  }
+  Z <- diag(Q) %x% matrix(1, npc, 1)
+  Mg <- 8 * matrix(runif(Q * Q), Q, Q) - 4
+  Y1 <- matrix(runif(n * n), n, n) - 0.5
+  Y2 <- matrix(runif(n * n), n, n) - 0.5
+  M_in_expectation <- sigmo(Z %*% Mg %*% t(Z) + 5 * Y1 - 3 * Y2)
+  M <- 1 * (matrix(runif(n * n), n, n) < M_in_expectation)
+
+  model <- BM_bernoulli_covariates("SBM", M, list(Y1, Y2), plotting = "", explore_min = 2, explore_max = 2, ncores = 2, verbosity = 0)
+  expect_model_estimation(model)
+})
+
+test_that("BM_bernoulli_covariates SBM_sym estimation runs", {
+  npc <- 10
+  Q <- 2
+  n <- npc * Q
+  sigmo <- function(x) {
+    1 / (1 + exp(-x))
+  }
+  Z <- diag(Q) %x% matrix(1, npc, 1)
+  Mg <- 8 * matrix(runif(Q * Q), Q, Q) - 4
+  Mg[lower.tri(Mg)] <- t(Mg)[lower.tri(Mg)]
+  Y1 <- matrix(runif(n * n), n, n) - 0.5
+  Y2 <- matrix(runif(n * n), n, n) - 0.5
+  Y1[lower.tri(Y1)] <- t(Y1)[lower.tri(Y1)]
+  Y2[lower.tri(Y2)] <- t(Y2)[lower.tri(Y2)]
+  M_in_expectation <- sigmo(Z %*% Mg %*% t(Z) + 5 * Y1 - 3 * Y2)
+  M <- 1 * (matrix(runif(n * n), n, n) < M_in_expectation)
+  M[lower.tri(M)] <- t(M)[lower.tri(M)]
+
+  model <- BM_bernoulli_covariates("SBM_sym", M, list(Y1, Y2), plotting = "", explore_min = 2, explore_max = 2, ncores = 2, verbosity = 0)
+  expect_model_estimation(model)
+})
+
+test_that("BM_bernoulli_covariates LBM estimation runs", {
+  npc <- c(20, 10)
+  Q <- c(1, 2)
+  n <- npc * Q
+  sigmo <- function(x) {
+    1 / (1 + exp(-x))
+  }
+  Z1 <- diag(Q[1]) %x% matrix(1, npc[1], 1)
+  Z2 <- diag(Q[2]) %x% matrix(1, npc[2], 1)
+  Mg <- 8 * matrix(runif(Q[1] * Q[2]), Q[1], Q[2]) - 4
+  Y1 <- matrix(runif(n[1] * n[2]), n[1], n[2]) - 0.5
+  Y2 <- matrix(runif(n[1] * n[2]), n[1], n[2]) - 0.5
+  M_in_expectation <- sigmo(Z1 %*% Mg %*% t(Z2) + 5 * Y1 - 3 * Y2)
+  M <- 1 * (matrix(runif(n[1] * n[2]), n[1], n[2]) < M_in_expectation)
+
+  model <- BM_bernoulli_covariates("LBM", M, list(Y1, Y2), plotting = "", explore_min = 2, explore_max = 2, ncores = 2, verbosity = 0)
+  expect_model_estimation(model)
+})
+
+
+test_that("BM_bernoulli_covariates SBM handles partial NA", {
+  set.seed(101)
+
+  npc <- 10
+  Q <- 2
+  n <- npc * Q
+  sigmo <- function(x) 1 / (1 + exp(-x))
+  Z <- diag(Q) %x% matrix(1, npc, 1)
+  Mg <- 8 * matrix(runif(Q * Q), Q, Q) - 4
+  Y1 <- matrix(runif(n * n), n, n) - 0.5
+  Y2 <- matrix(runif(n * n), n, n) - 0.5
+  P <- sigmo(Z %*% Mg %*% t(Z) + 3 * Y1 - 2 * Y2)
+  M <- 1 * (matrix(runif(n * n), n, n) < P)
+
+  off_diag <- which(row(M) != col(M))
+  set.seed(102)
+  M[sample(off_diag, max(1, floor(0.15 * length(off_diag))))] <- NA_real_
+
+  set.seed(103)
+  model <- BM_bernoulli_covariates("SBM", M, list(Y1, Y2), plotting = "", explore_min = 2, explore_max = 2, ncores = 1, verbosity = 0)
+  expect_no_error(model$estimate())
+})

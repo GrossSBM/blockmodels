@@ -4,6 +4,12 @@ struct SBM
     mat Z;
     rowvec alpha;
 
+    // For nodes covariates
+    bool has_nodes_covariates{false};
+    mat nodes_covariates;
+    mat B;
+    mat alphamat;
+
     SBM(Rcpp::List & membership_from_R)
     {
         mat origZ = membership_from_R["Z"];
@@ -12,12 +18,21 @@ struct SBM
         boundaries(Z,tol,1-tol);
         Z /= repmat( sum(Z,1), 1, Z.n_cols );
         alpha = sum(Z,0) / Z.n_rows;
+        if (membership_from_R.containsElementNamed("nodes_covariates")) {
+            has_nodes_covariates = true;
+            mat orig_nodes_covariates = membership_from_R["nodes_covariates"];
+            nodes_covariates = orig_nodes_covariates;
+        }
     }
 
     SBM& operator=(const SBM& orig)
     {
         Z=orig.Z;
         alpha=orig.alpha;
+        has_nodes_covariates = orig.has_nodes_covariates;
+        nodes_covariates = orig.nodes_covariates;
+        B = orig.B;
+        alphamat = orig.alphamat;
         
         return *this;
     }
@@ -39,6 +54,10 @@ struct SBM
         {
             // lZ the new log(Z) without renormalization
             mat lZ = repmat(log(alpha),Z.n_rows,1);
+            if (has_nodes_covariates && Z.n_cols > 1)
+            {
+                lZ = log(alphamat);
+            }
             
             // with a template, should be specialized by the model if possible
             e_fixed_step(*this, model, net, lZ);
@@ -73,6 +92,21 @@ struct SBM
     inline
     double m_step()
     {
+        if (has_nodes_covariates && Z.n_cols > 1)
+        {
+            B = optimize_softmax(nodes_covariates, Z); //compute_B
+            alphamat = softmax(nodes_covariates * B);
+
+            alphamat = clamp(alphamat, MIN_VAL, 1.0 - MIN_VAL);
+            alphamat /= repmat(sum(alphamat, 1), 1, alphamat.n_cols);
+            alphamat = clamp(alphamat, MIN_VAL, 1.0 - MIN_VAL);
+            alphamat /= repmat(sum(alphamat, 1), 1, alphamat.n_cols);
+
+            mat cross_Z_alpha = Z * log(alphamat).t();
+
+            return accu(cross_Z_alpha.diag());
+        }
+
         alpha = sum(Z,0) / Z.n_rows;
         return accu(Z * log(alpha).t());
     }
@@ -82,7 +116,16 @@ struct SBM
     {
         Rcpp::List values;
         values["Z"] = Z;
-        values["alpha"] = alpha;
+        if (has_nodes_covariates && Z.n_cols > 1)
+        {
+            values["alpha"] = alphamat;
+            values["B"] = B;
+        }
+        else
+        {
+            values["alpha"] = alpha;
+        }
+        values["nodes_covariates"] = nodes_covariates;
 
         return values;
     }

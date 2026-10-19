@@ -61,6 +61,7 @@ class bernoulli_covariates_fast
          */
 
         mat adj;
+        mat maskNA;
         cube covariates;
 
 
@@ -89,7 +90,11 @@ class bernoulli_covariates_fast
              * adjacency matrix, and the i-th matrix is the matrix of the i-th
              * covariate on all edges.
              */
-            adj = Rcpp::as<mat>(network_from_R["adjacency"]);
+            mat adj_orig = Rcpp::as<mat>(network_from_R["adjacency"]);
+
+            maskNA = compute_mask(adj_orig);
+
+            adj = replace_missing_values(adj_orig) % maskNA; // Replacing the missing values and applying mask (results in zeroes anyways but kept for ensuring correct masking) 
 
             Rcpp::List covariates_list = network_from_R["covariates"];
             covariates.set_size(adj.n_rows,adj.n_cols,covariates_list.size());
@@ -99,7 +104,7 @@ class bernoulli_covariates_fast
             adjD = adj - .5;
             adjZ = fill_diag(adj,0);
             adjDZ = fill_diag(adjD,0);
-            Mones = ones<mat>(adj.n_rows,adj.n_cols);
+            Mones = maskNA;//ones<mat>(adj.n_rows,adj.n_cols);
             MonesZ = fill_diag(Mones,0);
         }
     };

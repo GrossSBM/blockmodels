@@ -166,15 +166,18 @@ setRefClass("model",
                     say(1,"Estimation for 2 groups (1+1)")
                     do_with_inits(
                         list(getRefClass(membership_name)(
-                            network_size=.self$number_of_nodes())),
-                        2,reinitialization_effort)
+                            network_size = .self$number_of_nodes(), 
+                            row_covar = .self$nodes_covariates[["row"]], 
+                            col_covar = .self$nodes_covariates[["col"]])),
+                            Q = 2, reinitialization_effort = reinitialization_effort)
                 }
                 else
                 {
                     say(1,"Estimation for 1 groups")
                     do_with_inits(
                         list(getRefClass(membership_name)(
-                            network_size=.self$number_of_nodes())),
+                            network_size=.self$number_of_nodes(), 
+                            nodes_covar = .self$nodes_covariates[["node"]])),
                         1,reinitialization_effort)
 
                 }
@@ -360,7 +363,7 @@ setRefClass("model",
                     .self$do_one_estim,
                     mc.cores=ncores,
                     verbose=(verbosity>4))
-            
+
                 toc('estimation_run')
 
                 good <- FALSE
@@ -430,9 +433,13 @@ setRefClass("model",
                     kmax<-which.max(ICLs)
 
                     r<-results[[kmax]]
-                    memberships[[Q]] <<-
-                        getRefClass(membership_name)(from_cc=r$membership)
-
+                    if (membership_name == "LBM"){
+                        memberships[[Q]] <<-
+                            getRefClass(membership_name)(from_cc=r$membership)
+                    } else {
+                        memberships[[Q]] <<-
+                            getRefClass(membership_name)(from_cc=r$membership)
+                    }
                     if(membership_name=="LBM")
                     {
                         say(5,memberships[[Q]]$show_short())

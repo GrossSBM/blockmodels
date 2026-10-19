@@ -4,7 +4,7 @@ BM_poisson_covariates <- setRefClass("BM_poisson_covariates",
     methods = list(
         initialize = function(membership_type,adj,covariates,...)
         {
-            if(is.matrix(covariates))
+            if(inherits(covariates, "matrix"))
             {
                 covariates_list <- list(covariates)
             }

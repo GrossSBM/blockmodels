@@ -1,19 +1,57 @@
-
 setRefClass("scalar_model",
     contains = "model",
     fields = list(
-        adj = "matrix"
+        adj = "matrix",
+        nodes_covariates = "list"
     ),
     methods = list(
         postinit = function()
         {
             callSuper()
+
             if(membership_name=="SBM" || membership_name=="SBM_sym")
             {
                 if(nrow(adj)!=ncol(adj))
                 {
                     stop(paste("The adjacency matrix does not have the same number of rows and columns.",
                                "Vocatus periculosum ad sanitatem est."))
+                }
+            }
+
+            if (length(nodes_covariates) > 0) {
+                if (any(!sapply(nodes_covariates, is.matrix))) {
+                    stop(paste("Nodes covariates must be matrices."))
+                }
+
+                # TODO add checks for the values of the covariates
+
+                if ((membership_name == "SBM_sym" || membership_name == "SBM")) {
+                    if (length(nodes_covariates) > 1) {
+                        stop(paste("Multiple nodes covariates given for SBM.", "Should only be a list with one matrix."))
+                    }
+                    if (nrow(nodes_covariates[["node"]]) != nrow(adj)) {
+                        stop(paste("The number of rows of the node covariates matrix must match the number of nodes."))
+                    }
+                    if (is.null(names(nodes_covariates)) || names(nodes_covariates) != "node") {
+                        stop(paste("For SBM node covariates matrix must be named 'node'."))
+                    }
+                }
+                if (membership_name == "LBM") {
+                    if (is.null(names(nodes_covariates))) {
+                        stop(paste("For LBM node covariates matrices must be named (row, col) to indicate which nodes the covariates are on."))
+                    }
+                    if (any(!(names(nodes_covariates) %in% c("row", "col")))) {
+                        stop(paste("For LBM node covariates matrices, the names must be either row or col."))
+                    }
+
+                    sapply(c("row", "col"), function(dim) {
+                        if (dim %in% names(nodes_covariates)) {
+                            number_of_nodes <- ifelse(dim == "row", nrow(adj), ncol(adj))
+                            if (nrow(nodes_covariates[[dim]]) != number_of_nodes) {
+                                stop(paste0("The number of rows for the ", dim, " nodes covariates matrix must match the number of ", dim, " nodes."))
+                            }
+                        }
+                    })
                 }
             }
 
@@ -53,7 +91,7 @@ setRefClass("scalar_model",
                     Z[,q] <- Z[,q]*sub_classif
                     Z[,Q+1] <- Z[,Q+1]*(1-sub_classif)
                     result <- c(result, list(
-                            getRefClass(membership_name)(from_cc=list(Z=Z))
+                            getRefClass(membership_name)(from_cc=list(Z=Z), nodes_covar = .self$nodes_covariates[["node"]])
                         ))
                 }
                 return(result)
@@ -96,7 +134,8 @@ setRefClass("scalar_model",
                         Z1[,q] <- Z1[,q]*sub_classif
                         Z1[,Q1+1] <- Z1[,Q1+1]*(1-sub_classif)
                         result <- c(result, list(
-                                getRefClass(membership_name)(from_cc=list(Z1=Z1,Z2=membership$Z2))
+                                getRefClass(membership_name)(from_cc=list(Z1=Z1,Z2=membership$Z2, row_covariates =.self$nodes_covariates[["row"]],
+                                col_covariates=.self$nodes_covariates[["col"]]))
                             ))
                     }
                 }
@@ -113,7 +152,8 @@ setRefClass("scalar_model",
                         Z2[,q] <- Z2[,q]*sub_classif
                         Z2[,Q2+1] <- Z2[,Q2+1]*(1-sub_classif)
                         result <- c(result, list(
-                                getRefClass(membership_name)(from_cc=list(Z1=membership$Z1,Z2=Z2))
+                                getRefClass(membership_name)(from_cc=list(Z1=membership$Z1,Z2=Z2, row_covariates=.self$nodes_covariates[["row"]],
+                                col_covariates=.self$nodes_covariates[["col"]]))
                             ))
                     }
                 }
@@ -122,17 +162,18 @@ setRefClass("scalar_model",
         },
         data_number = function()
         {
+            mask <- !is.na(adj)
             if(membership_name=="SBM")
             {
-                return(dim(adj)[1]*(dim(adj)[1]-1))
+                return(sum(mask) - sum(diag(mask)))
             }
             if(membership_name=="SBM_sym")
             {
-                return(dim(adj)[1]*(dim(adj)[1]-1)/2)
+                return((sum(mask) - sum(diag(mask)))/2)
             }
             else
             {
-                return(dim(adj)[1]*(dim(adj)[2]))
+                return(sum(mask))
             }
         },
         precompute = function()
@@ -204,7 +245,8 @@ setRefClass("scalar_model",
                             classif=blockmodelskmeans(
                                 as.matrix(precomputed$eigen$vectors[,1:Q]),
                                 Q
-                            )
+                            ),
+                            nodes_covar = .self$nodes_covariates[["node"]]
                         )
                     )
                 )
@@ -245,7 +287,9 @@ setRefClass("scalar_model",
                                 classif=list(
                                     blockmodelskmeans(as.matrix(precomputed$eigen1$vectors[,1:Q1]),Q1),
                                     blockmodelskmeans(as.matrix(precomputed$eigen2$vectors[,1:Q2]),Q2)
-                                )
+                                ),
+                                row_covar = .self$nodes_covariates[["row"]],
+                                col_covar = .self$nodes_covariates[["col"]]
                             )
                         }
                     }
@@ -290,7 +334,9 @@ setRefClass("scalar_model",
         plot_transform = function(x){x},
         residual = function(Q)
         {
-            adj-.self$prediction(Q)
+            non_na_adj <- adj
+            non_na_adj[is.na(adj)] <- 0
+            non_na_adj-.self$prediction(Q)
         }
 
             
