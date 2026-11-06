@@ -261,14 +261,14 @@ void e_fixed_step(SBM & membership,
         power_moT[t]=power_moT[t-1] % power_moT[1];
     }
     
-    lZ += net.adjDZ * membership.Z * model.m.t();
+    lZ += net.adjDZ * membership.Z * model.m.t()
         + net.adjDZ.t() * membership.Z * model.m;
 
     for(unsigned int k=0; k<=bcf_K; k++)
     {
         for(unsigned int t=0; t<=2*k; t++)
         {
-            lZ += bcf[k][t] * power_BoT[2*k-t] * membership.Z * power_moT[t].t();
+            lZ += bcf[k][t] * power_BoT[2*k-t] * membership.Z * power_moT[t].t()
                 + bcf[k][t] * power_BoT[2*k-t].t() * membership.Z * power_moT[t];
         }
     }
