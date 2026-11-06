@@ -1,5 +1,37 @@
 # Changelog
 
+## blockmodels (development version)
+
+- Fixed a bug in undirected models (`SBM_sym` memberships, i.e. all
+  `sbm::estimateSimpleSBM()` calls on a symmetric network, the default
+  for symmetric networks): the E step actually executed was the one of
+  `SBM`, which counts each dyad twice instead of once. As a consequence,
+  the posterior probabilities (`Z`) were overconfident (too sharp) and
+  the VEM did not exactly optimize the criterion it reports, although
+  the final clustering was mostly unaffected on well-separated data.
+  This also exposed (and fixes) two other, previously untested, latent
+  bugs that were introduced by the same root cause (an `e_fixed_step()`
+  overload resolved on the static, base `SBM` type instead of on the
+  actual `SBM_sym` membership type, so the SBM_sym-specific E step code
+  was never executed in practice):
+  - `BM_gaussian_covariates` with `SBM_sym`: the E step used the wrong
+    matrices (the variance term used the adjacency/covariates residual
+    matrix instead of the “all ones” matrix, and vice-versa for the
+    cross term).
+  - `BM_bernoulli_covariates_fast` with `SBM_sym`: the E step was
+    missing a `Z` factor, causing a matrix dimension mismatch (this
+    model would error out with `SBM_sym` memberships). The `SBM`
+    (directed) E step of the same model was also silently dropping half
+    of its terms because of a stray semicolon, independently of the
+    `SBM_sym` issue; both are fixed. Because of this fix, **all fits of
+    a symmetric network (`SBM_sym`, including
+    `sbm::estimateSimpleSBM()`) will return different, more accurate
+    posterior probabilities and, for `BM_gaussian_covariates` and
+    `BM_bernoulli_covariates_fast`, different parameter estimates as
+    well.** Model selection and downstream uses of the posteriors may be
+    affected, especially when the signal is weak
+    ([\#8](https://github.com/GrossSBM/blockmodels/issues/8)).
+
 ## blockmodels 1.2.1
 
 - Added covariates on the nodes, driving the block memberships through a
