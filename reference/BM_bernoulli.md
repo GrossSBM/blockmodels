@@ -29,7 +29,12 @@ BM_bernoulli(
 
 - adj:
 
-  The adjacency matrix
+  The adjacency matrix. It may contain missing values (`NA`): the
+  corresponding dyads are not observed, and are ignored in the
+  likelihood, the estimation of the parameters and the ICL. This assumes
+  that the dyads are missing at random; see the package missSBM for
+  other sampling designs. The diagonal is ignored for SBM and SBM_sym
+  memberships.
 
 - verbosity:
 
@@ -101,7 +106,10 @@ BM_bernoulli(
   rows as the number of nodes. For the LBM membership type, the list may
   contain one or two elements, named 'row' or 'col', the elements must
   be matrices with the number of rows corresponding to the number of
-  nodes for the corresponding type of nodes (row or col).
+  nodes for the corresponding type of nodes (row or col). The block
+  proportions of each node are given by a multinomial logistic
+  regression on its covariates: include a column of ones in the matrix
+  to have an intercept. The covariates must not contain missing values.
 
 ## Examples
 

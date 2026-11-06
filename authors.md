@@ -2,27 +2,32 @@
 
 ## Authors
 
-- **Jean-Benoist Leger**. Author, maintainer.
+- **Jean-Benoist Leger**. Author.  
+  original author and main developer
+
+- **Julien Chiquet**. Author, maintainer.
+  [](https://orcid.org/0000-0002-3629-3429)
 
 - **Pierre Barbillon**. Author.
-
-- **Julien Chiquet**. Author.
+  [](https://orcid.org/0000-0002-7766-7693)
 
 - **Louis Lacoste**. Author.
 
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/GrossSBM/blockmodels/blob/master/DESCRIPTION)
+[`inst/CITATION`](https://github.com/GrossSBM/blockmodels/blob/master/inst/CITATION)
 
-Leger J, Barbillon P, Chiquet J, Lacoste L (2026). *blockmodels: Latent
-and Stochastic Block Model Estimation by a 'V-EM' Algorithm*. R package
-version 1.2.1, <https://github.com/GrossSBM/blockmodels>.
+Leger J (2016). “Blockmodels: A R-package for estimating in Latent Block
+Model and Stochastic Block Model, with various probability functions,
+with or without covariates.”
+[doi:10.48550/arXiv.1602.07587](https://doi.org/10.48550/arXiv.1602.07587).
+arXiv preprint arXiv:1602.07587.
 
-    @Manual{,
-      title = {blockmodels: Latent and Stochastic Block Model Estimation by a 'V-EM' Algorithm},
-      author = {Jean-Benoist Leger and Pierre Barbillon and Julien Chiquet and Louis Lacoste},
-      year = {2026},
-      note = {R package version 1.2.1},
-      url = {https://github.com/GrossSBM/blockmodels},
+    @Misc{,
+      title = {Blockmodels: A R-package for estimating in Latent Block Model and Stochastic Block Model, with various probability functions, with or without covariates},
+      author = {Jean-Benoist Leger},
+      year = {2016},
+      note = {arXiv preprint arXiv:1602.07587},
+      doi = {10.48550/arXiv.1602.07587},
     }

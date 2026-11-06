@@ -32,9 +32,9 @@
     </div>
 
     <div class="section level2">
-      <h2 id="all-functions">All functions<a class="anchor" aria-label="anchor" href="#all-functions"></a></h2>
+      <h2 id="models-for-scalar-networks">Models for scalar networks<a class="anchor" aria-label="anchor" href="#models-for-scalar-networks"></a></h2>
 
-
+      <div class="section-desc"><p>One value per dyad. The adjacency matrix may contain missing values (NA).</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -50,6 +50,29 @@
 
         <dt>
 
+          <code><a href="BM_poisson.html">BM_poisson(<i>&lt;new&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Perform estimation on blockmodels for poisson probability distribution</dd>
+
+        <dt>
+
+          <code><a href="BM_gaussian.html">BM_gaussian(<i>&lt;new&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Perform estimation on blockmodels for gaussian probability distribution</dd>
+      </dl></div><div class="section level2">
+      <h2 id="models-for-scalar-networks-with-covariates-on-the-edges">Models for scalar networks with covariates on the edges<a class="anchor" aria-label="anchor" href="#models-for-scalar-networks-with-covariates-on-the-edges"></a></h2>
+
+
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
           <code><a href="BM_bernoulli_covariates.html">BM_bernoulli_covariates(<i>&lt;new&gt;</i>)</a></code>
 
         </dt>
@@ -64,17 +87,10 @@
 
         <dt>
 
-          <code><a href="BM_bernoulli_multiplex.html">BM_bernoulli_multiplex(<i>&lt;new&gt;</i>)</a></code>
+          <code><a href="BM_poisson_covariates.html">BM_poisson_covariates(<i>&lt;new&gt;</i>)</a></code>
 
         </dt>
-        <dd>Perform estimation on blockmodels for multiplex binary networks</dd>
-
-        <dt>
-
-          <code><a href="BM_gaussian.html">BM_gaussian(<i>&lt;new&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Perform estimation on blockmodels for gaussian probability distribution</dd>
+        <dd>Perform estimation on blockmodels for poisson probability distribution aith covariates</dd>
 
         <dt>
 
@@ -82,6 +98,22 @@
 
         </dt>
         <dd>Perform estimation on blockmodels for gaussian probability distribution with covariates</dd>
+      </dl></div><div class="section level2">
+      <h2 id="models-for-multivariate-networks">Models for multivariate networks<a class="anchor" aria-label="anchor" href="#models-for-multivariate-networks"></a></h2>
+
+      <div class="section-desc"><p>Several values per dyad (multiplex networks). Missing values are not supported.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="BM_bernoulli_multiplex.html">BM_bernoulli_multiplex(<i>&lt;new&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Perform estimation on blockmodels for multiplex binary networks</dd>
 
         <dt>
 
@@ -103,26 +135,13 @@
 
         </dt>
         <dd>Perform estimation on blockmodels for multivariate independent homoscedastic gaussian probability distribution</dd>
-
-        <dt>
-
-          <code><a href="BM_poisson.html">BM_poisson(<i>&lt;new&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Perform estimation on blockmodels for poisson probability distribution</dd>
-
-        <dt>
-
-          <code><a href="BM_poisson_covariates.html">BM_poisson_covariates(<i>&lt;new&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Perform estimation on blockmodels for poisson probability distribution aith covariates</dd>
       </dl></div>
-  </main></div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Jean-Benoist Leger, Pierre Barbillon, Julien Chiquet, Louis Lacoste.</p>
+  <p>Developed by Jean-Benoist Leger, Julien Chiquet, Pierre Barbillon, Louis Lacoste.</p>
 </div>
 
 <div class="pkgdown-footer-right">

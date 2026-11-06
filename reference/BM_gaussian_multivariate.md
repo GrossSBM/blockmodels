@@ -29,7 +29,8 @@ BM_gaussian_multivariate(
 
 - adj:
 
-  The list of adjacency matrices. All matrices must have the same size
+  The list of adjacency matrices. All matrices must have the same size.
+  Missing values (`NA`) are not supported for multivariate models.
 
 - verbosity:
 
@@ -101,7 +102,10 @@ BM_gaussian_multivariate(
   rows as the number of nodes. For the LBM membership type, the list may
   contain one or two elements, named 'row' or 'col', the elements must
   be matrices with the number of rows corresponding to the number of
-  nodes for the corresponding type of nodes (row or col).
+  nodes for the corresponding type of nodes (row or col). The block
+  proportions of each node are given by a multinomial logistic
+  regression on its covariates: include a column of ones in the matrix
+  to have an intercept. The covariates must not contain missing values.
 
 ## Examples
 

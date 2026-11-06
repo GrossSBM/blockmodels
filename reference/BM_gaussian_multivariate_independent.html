@@ -64,7 +64,7 @@ parameters and node membership</p>
 <dd><p>The type of node membership, i.e. 'SBM', 'SBM_sym' or 'LBM'</p></dd>
 
     <dt id="arg-adj">adj<a class="anchor" aria-label="anchor" href="#arg-adj"></a></dt>
-<dd><p>The list of adjacency matrices. All matrices must have the same size</p></dd>
+<dd><p>The list of adjacency matrices. All matrices must have the same size. Missing values (<code>NA</code>) are not supported for multivariate models.</p></dd>
 
     <dt id="arg-verbosity">verbosity<a class="anchor" aria-label="anchor" href="#arg-verbosity"></a></dt>
 <dd><p>The verbosity level, 0 means quiet. Level 1 display the phase of reinitialization. Level 2 display the level 1 and the ascending and descending phase for the number of groups. Level 3 display the level 2 and the number current number of groups which is estimated. Level 4 display the level 3 and the steps inside the estimation. Level 5 display the level 4, the current status of parallel running jobs and the current sub-step. Level 6 display level 5 and informations about ICL criteria found. Default is level 6. This parameter can be changed by accessing to the field $verbosity of the object.</p></dd>
@@ -90,7 +90,7 @@ parameters and node membership</p>
 <dd><p>Number of parallel jobs to launch different EM intializations. By default detectCores(). This parameter can be changed by accessing the field $ncores of the object. This parameters is used only on Linux. Parallism is disabled on other plateform. (Not working on Windows, not tested on Mac OS, not tested on *BSD.)</p></dd>
 
 <dt id="arg-nodes-covariates">nodes_covariates<a class="anchor" aria-label="anchor" href="#arg-nodes-covariates"></a></dt>
-<dd><p>A list containing the (optional) nodes covariates. For SBM or SBM_sym, the list must contain one element named 'node', a matrix with as many rows as the number of nodes. For the LBM membership type, the list may contain one or two elements, named 'row' or 'col', the elements must be matrices with the number of rows corresponding to the number of nodes for the corresponding type of nodes (row or col).</p></dd>
+<dd><p>A list containing the (optional) nodes covariates. For SBM or SBM_sym, the list must contain one element named 'node', a matrix with as many rows as the number of nodes. For the LBM membership type, the list may contain one or two elements, named 'row' or 'col', the elements must be matrices with the number of rows corresponding to the number of nodes for the corresponding type of nodes (row or col). The block proportions of each node are given by a multinomial logistic regression on its covariates: include a column of ones in the matrix to have an intercept. The covariates must not contain missing values.</p></dd>
 
 </dl></div>
 
@@ -167,7 +167,7 @@ parameters and node membership</p>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Jean-Benoist Leger, Pierre Barbillon, Julien Chiquet, Louis Lacoste.</p>
+  <p>Developed by Jean-Benoist Leger, Julien Chiquet, Pierre Barbillon, Louis Lacoste.</p>
 </div>
 
 <div class="pkgdown-footer-right">

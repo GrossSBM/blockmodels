@@ -33,30 +33,40 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="development version" id="blockmodels-development-version">blockmodels (development version)<a class="anchor" aria-label="anchor" href="#blockmodels-development-version"></a></h2>
-<ul><li>Fixed a bug in undirected models (<code>SBM_sym</code> memberships, i.e. all <code>sbm::estimateSimpleSBM()</code> calls on a symmetric network, the default for symmetric networks): the E step actually executed was the one of <code>SBM</code>, which counts each dyad twice instead of once. As a consequence, the posterior probabilities (<code>Z</code>) were overconfident (too sharp) and the VEM did not exactly optimize the criterion it reports, although the final clustering was mostly unaffected on well-separated data. This also exposed (and fixes) two other, previously untested, latent bugs that were introduced by the same root cause (an <code>e_fixed_step()</code> overload resolved on the static, base <code>SBM</code> type instead of on the actual <code>SBM_sym</code> membership type, so the SBM_sym-specific E step code was never executed in practice):
+<h2 class="pkg-version" data-toc-text="1.2.1" id="blockmodels-121">blockmodels 1.2.1<a class="anchor" aria-label="anchor" href="#blockmodels-121"></a></h2>
+<div class="section level3">
+<h3 id="new-features-1-2-1">New features<a class="anchor" aria-label="anchor" href="#new-features-1-2-1"></a></h3>
+<ul><li>Added covariates on the nodes, driving the block memberships through a multinomial logistic regression (argument <code>nodes_covariates</code> of all the models: a list with one matrix named <code>node</code> for SBM and SBM_sym, or with matrices named <code>row</code> and/or <code>col</code> for LBM). The estimated coefficients are stored in the field <code>B</code> (and <code>G</code> for the columns of an LBM) of the memberships, and the ICL penalty accounts for them.</li>
+<li>Beginning adding handling of <code>NA</code> values in the data. Only scalar (with or without covariates) bernoulli, poisson and gaussian emission distribution models are supported for now. The <code>NA</code> values are ignored in the likelihood calculations, and the corresponding entries in the data are not used to update the parameters of the model. Multivariate models, and missing values in the edge covariates, stop with an explicit error.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="bug-fixes-that-change-the-results-1-2-1">Bug fixes that change the results<a class="anchor" aria-label="anchor" href="#bug-fixes-that-change-the-results-1-2-1"></a></h3>
+<ul><li>Undirected models (<code>SBM_sym</code> memberships, i.e. all <code>sbm::estimateSimpleSBM()</code> calls on a symmetric network, the default for symmetric networks): the E step actually executed was the one of <code>SBM</code>, which counts each dyad twice instead of once. As a consequence, the posterior probabilities (<code>Z</code>) were overconfident (too sharp) and the VEM did not exactly optimize the criterion it reports, although the final clustering was mostly unaffected on well-separated data. This also exposed (and fixes) two other, previously untested, latent bugs that were introduced by the same root cause (an <code>e_fixed_step()</code> overload resolved on the static, base <code>SBM</code> type instead of on the actual <code>SBM_sym</code> membership type, so the SBM_sym-specific E step code was never executed in practice):
 <ul><li>
 <code>BM_gaussian_covariates</code> with <code>SBM_sym</code>: the E step used the wrong matrices (the variance term used the adjacency/covariates residual matrix instead of the “all ones” matrix, and vice-versa for the cross term).</li>
 <li>
-<code>BM_bernoulli_covariates_fast</code> with <code>SBM_sym</code>: the E step was missing a <code>Z</code> factor, causing a matrix dimension mismatch (this model would error out with <code>SBM_sym</code> memberships). The <code>SBM</code> (directed) E step of the same model was also silently dropping half of its terms because of a stray semicolon, independently of the <code>SBM_sym</code> issue; both are fixed. Because of this fix, <strong>all fits of a symmetric network (<code>SBM_sym</code>, including <code>sbm::estimateSimpleSBM()</code>) will return different, more accurate posterior probabilities and, for <code>BM_gaussian_covariates</code> and <code>BM_bernoulli_covariates_fast</code>, different parameter estimates as well.</strong> Model selection and downstream uses of the posteriors may be affected, especially when the signal is weak (<a href="https://github.com/GrossSBM/blockmodels/issues/8" class="external-link">#8</a>).</li>
-</ul></li>
-</ul></div>
-    <div class="section level2">
-<h2 class="pkg-version" data-toc-text="1.2.1" id="blockmodels-121">blockmodels 1.2.1<a class="anchor" aria-label="anchor" href="#blockmodels-121"></a></h2>
-<ul><li>Added covariates on the nodes, driving the block memberships through a multinomial logistic regression (argument <code>nodes_covariates</code> of all the models: a list with one matrix named <code>node</code> for SBM and SBM_sym, or with matrices named <code>row</code> and/or <code>col</code> for LBM). The estimated coefficients are stored in the field <code>B</code> (and <code>G</code> for the columns of an LBM) of the memberships, and the ICL penalty accounts for them.</li>
-<li>Beginning adding handling of <code>NA</code> values in the data. Only scalar (with or without covariates) bernoulli, poisson and gaussian emission distribution models are supported for now. The <code>NA</code> values are ignored in the likelihood calculations, and the corresponding entries in the data are not used to update the parameters of the model. Multivariate models, and missing values in the edge covariates, now stop with an explicit error.</li>
-<li>Gaussian models with <code>NA</code>: the variance and the likelihood now use the number of observed entries, and the covariates of <code>BM_gaussian_covariates</code> on the missing entries are ignored. The residuals used for the initializations are null on the missing entries.</li>
+<code>BM_bernoulli_covariates_fast</code> with <code>SBM_sym</code>: the E step was missing a <code>Z</code> factor, causing a matrix dimension mismatch (this model would error out with <code>SBM_sym</code> memberships). The <code>SBM</code> (directed) E step of the same model was also silently dropping half of its terms because of a stray semicolon, independently of the <code>SBM_sym</code> issue; both are fixed.</li>
+</ul>
+Because of this fix, <strong>all fits of a symmetric network (<code>SBM_sym</code>, including <code>sbm::estimateSimpleSBM()</code>) will return different, more accurate posterior probabilities and, for <code>BM_gaussian_covariates</code> and <code>BM_bernoulli_covariates_fast</code>, different parameter estimates as well.</strong> Model selection and downstream uses of the posteriors may be affected, especially when the signal is weak (<a href="https://github.com/GrossSBM/blockmodels/issues/8" class="external-link">#8</a>).</li>
+<li>Fixed <code>prediction()</code> of <code>BM_bernoulli_covariates</code> and <code>BM_bernoulli_covariates_fast</code>: the expected network is now the expectation under the posterior probabilities, sum over (q,l) of Z[i,q] Z[j,l] sigmo(m[q,l] + covariates effect), instead of sigmo(Z m Z’ + covariates effect), which was exact only for indicator memberships (<a href="https://github.com/GrossSBM/blockmodels/issues/2" class="external-link">#2</a>). As the residuals guide the initializations by splitting groups, the estimates of these models may slightly differ from the previous versions.</li>
 <li>
 <code>BM_gaussian</code> with SBM and SBM_sym memberships: the variance is now the mean squared error over the n(n-1) entries out of the diagonal (it was divided by n^2), consistently with the likelihood. Its estimate is multiplied by n/(n-1) compared to the previous versions.</li>
-<li>Fixed <code>prediction()</code> of <code>BM_bernoulli_covariates</code> and <code>BM_bernoulli_covariates_fast</code>: the expected network is now the expectation under the posterior probabilities, sum over (q,l) of Z[i,q] Z[j,l] sigmo(m[q,l] + covariates effect), instead of sigmo(Z m Z’ + covariates effect), which was exact only for indicator memberships (<a href="https://github.com/GrossSBM/blockmodels/issues/2" class="external-link">#2</a>). As the residuals guide the initializations by splitting groups, the estimates of these models may slightly differ from the previous versions.</li>
+<li>Gaussian models with <code>NA</code>: the variance and the likelihood use the number of observed entries, and the covariates of <code>BM_gaussian_covariates</code> on the missing entries are ignored. The residuals used for the initializations are null on the missing entries.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="other-changes-1-2-1">Other changes<a class="anchor" aria-label="anchor" href="#other-changes-1-2-1"></a></h3>
+<ul><li>Faster E and M steps in presence of <code>NA</code> (the mask is applied once to the precomputed matrices of the network), and no n x n matrix in the M step of the nodes covariates.</li>
+<li>Julien Chiquet is the new maintainer of the package; Louis Lacoste joins the authors.</li>
+<li>Test suite with testthat, continuous integration and pkgdown website on GitHub (<a href="https://github.com/GrossSBM/blockmodels" class="external-link uri">https://github.com/GrossSBM/blockmodels</a>).</li>
 <li>Added a <code>NEWS.md</code> file to track changes to the package.</li>
 </ul></div>
+</div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Jean-Benoist Leger, Pierre Barbillon, Julien Chiquet, Louis Lacoste.</p>
+  <p>Developed by Jean-Benoist Leger, Julien Chiquet, Pierre Barbillon, Louis Lacoste.</p>
 </div>
 
 <div class="pkgdown-footer-right">
