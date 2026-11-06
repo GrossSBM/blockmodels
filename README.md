@@ -34,5 +34,5 @@ pak::pak("GrossSBM/blockmodels")
 ## Documentation
 
 The package documentation is available on
-[CRAN](https://CRAN.R-project.org/package=blockmodels) and (will be) on
-[GitHub](https://grosssbm.github.io/blockmodels/).
+[CRAN](https://CRAN.R-project.org/package=blockmodels) and on the
+[package website](https://grosssbm.github.io/blockmodels/).
