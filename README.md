@@ -15,6 +15,16 @@ Latent and Stochastic Block Model estimation by a Variational EM
 algorithm. Various probability distribution are provided (Bernoulli,
 Poisson…), with or without covariates.
 
+blockmodels was written by Jean-Benoist Leger, its original author and
+main developer. If you use it, please cite:
+
+> Jean-Benoist Leger (2016). Blockmodels: A R-package for estimating in
+> Latent Block Model and Stochastic Block Model, with various
+> probability functions, with or without covariates.
+> [arXiv:1602.07587](https://arxiv.org/abs/1602.07587).
+
+(see also `citation("blockmodels")`).
+
 ## Installation
 
 The stable version of blockmodels can be installed from CRAN with:
@@ -34,5 +44,5 @@ pak::pak("GrossSBM/blockmodels")
 ## Documentation
 
 The package documentation is available on
-[CRAN](https://CRAN.R-project.org/package=blockmodels) and (will be) on
-[GitHub](https://grosssbm.github.io/blockmodels/).
+[CRAN](https://CRAN.R-project.org/package=blockmodels) and on the
+[package website](https://grosssbm.github.io/blockmodels/).

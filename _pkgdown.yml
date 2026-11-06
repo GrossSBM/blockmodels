@@ -1,4 +1,27 @@
-url: ~
+url: https://grosssbm.github.io/blockmodels/
+
 template:
   bootstrap: 5
 
+reference:
+- title: Models for scalar networks
+  desc: >
+    One value per dyad. The adjacency matrix may contain missing values (NA).
+- contents:
+  - BM_bernoulli
+  - BM_poisson
+  - BM_gaussian
+- title: Models for scalar networks with covariates on the edges
+- contents:
+  - BM_bernoulli_covariates
+  - BM_bernoulli_covariates_fast
+  - BM_poisson_covariates
+  - BM_gaussian_covariates
+- title: Models for multivariate networks
+  desc: >
+    Several values per dyad (multiplex networks). Missing values are not supported.
+- contents:
+  - BM_bernoulli_multiplex
+  - BM_gaussian_multivariate
+  - BM_gaussian_multivariate_independent
+  - BM_gaussian_multivariate_independent_homoscedastic

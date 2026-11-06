@@ -36,15 +36,15 @@ $config{'MODEL_ARG_ITEM'} =
     "\\item{explore_max}{Stop exploration after explore_max number of group in any case. By default Inf. This parameter can be changed by accessing the field \$explore_max of the object.}\n".
     "\\item{exploration_direction}{Only for LBM membership. Control the exploration direction for groups number. When provided, the exploring strategy is made to explore the provided group number. Must be a vector of two integer value representing the row group number and the column group number.}\n".
     "\\item{ncores}{Number of parallel jobs to launch different EM intializations. By default detectCores(). This parameter can be changed by accessing the field \$ncores of the object. This parameters is used only on Linux. Parallism is disabled on other plateform. (Not working on Windows, not tested on Mac OS, not tested on *BSD.)}\n".
-    "\\item{nodes_covariates}{A list containing the (optional) nodes covariates. For SBM or SBM_sym, the list must contain one element named 'node', a matrix with as many rows as the number of nodes. For the LBM membership type, the list may contain one or two elements, named 'row' or 'col', the elements must be matrices with the number of rows corresponding to the number of nodes for the corresponding type of nodes (row or col).}";
+    "\\item{nodes_covariates}{A list containing the (optional) nodes covariates. For SBM or SBM_sym, the list must contain one element named 'node', a matrix with as many rows as the number of nodes. For the LBM membership type, the list may contain one or two elements, named 'row' or 'col', the elements must be matrices with the number of rows corresponding to the number of nodes for the corresponding type of nodes (row or col). The block proportions of each node are given by a multinomial logistic regression on its covariates: include a column of ones in the matrix to have an intercept. The covariates must not contain missing values.}";
 
 $config{'SCALAR_MODEL_ARG_ITEM'} =
-    "\\item{adj}{The adjacency matrix}";
+    "\\item{adj}{The adjacency matrix. It may contain missing values (\\code{NA}): the corresponding dyads are not observed, and are ignored in the likelihood, the estimation of the parameters and the ICL. This assumes that the dyads are missing at random; see the package missSBM for other sampling designs. The diagonal is ignored for SBM and SBM_sym memberships.}";
 
 $config{'MULTIVARIATE_MODEL_ARG_ITEM'} = 
-    "\\item{adj}{The list of adjacency matrices. All matrices must have the same size}";
+    "\\item{adj}{The list of adjacency matrices. All matrices must have the same size. Missing values (\\code{NA}) are not supported for multivariate models.}";
 
 $config{'COVARIATES_ARG'} = 'covariates';
 
 $config{'COVARIATES_ARG_ITEM'} =
-    "\\item{covariates}{Covariates matrix, or list of covariates matrices. Covariates matrix must have the same size than the adjacency matrix.}";
+    "\\item{covariates}{Covariates matrix, or list of covariates matrices. Covariates matrix must have the same size than the adjacency matrix, and must not contain missing values.}";

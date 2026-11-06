@@ -1,0 +1,8 @@
+bibentry(
+  bibtype = "Misc",
+  title   = "Blockmodels: A R-package for estimating in Latent Block Model and Stochastic Block Model, with various probability functions, with or without covariates",
+  author  = person("Jean-Benoist", "Leger"),
+  year    = "2016",
+  note    = "arXiv preprint arXiv:1602.07587",
+  doi     = "10.48550/arXiv.1602.07587"
+)
