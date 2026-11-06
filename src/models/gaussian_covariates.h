@@ -259,8 +259,8 @@ void e_fixed_step(SBM_sym & membership,
 {
     mat adjmBZD = fill_diag((net.adj-gaussian_covariates_compute_B(model.beta,net.covariates)) % net.maskNA,0);
     lZ  += 1.0/(2*model.sigma2) * (
-            - adjmBZD * membership.Z * (model.mu % model.mu)
-            + 2 * net.adjZD * membership.Z * model.mu
+            - net.MonesZD * membership.Z * (model.mu % model.mu)
+            + 2 * adjmBZD * membership.Z * model.mu
         );
 
 }

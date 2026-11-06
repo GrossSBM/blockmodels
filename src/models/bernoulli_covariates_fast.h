@@ -315,7 +315,7 @@ void e_fixed_step(SBM_sym & membership,
     {
         for(unsigned int t=0; t<=2*k; t++)
         {
-            lZ += bcf[k][t] * power_BoT[2*k-t] * power_moT[t];
+            lZ += bcf[k][t] * power_BoT[2*k-t] * membership.Z * power_moT[t];
         }
     }
 }
