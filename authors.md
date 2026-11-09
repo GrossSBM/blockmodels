@@ -16,7 +16,7 @@
 ## Citation
 
 Source:
-[`inst/CITATION`](https://github.com/GrossSBM/blockmodels/blob/v1.2.1/inst/CITATION)
+[`inst/CITATION`](https://github.com/GrossSBM/blockmodels/blob/master/inst/CITATION)
 
 Leger J (2016). “Blockmodels: A R-package for estimating in Latent Block
 Model and Stochastic Block Model, with various probability functions,
