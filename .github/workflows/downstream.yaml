@@ -60,6 +60,9 @@ jobs:
           working-directory: downstream
           extra-packages: any::rcmdcheck, local::../blockmodels
           needs: check
+          # own cache prefix: the other workflows must not restore this library (sbm, igraph...)
+          # without the system libraries installed here (e.g. libglpk for igraph)
+          cache-version: downstream
 
       - uses: r-lib/actions/check-r-package@v2
         with:
