@@ -1,5 +1,9 @@
 # blockmodels (development version)
 
+## New features
+
+* New model `BM_bernoulli_multiplex_independent` for multiplex binary networks whose layers are independent given the blocks: one connectivity matrix per layer (`model_parameters[[Q]]$pi` is a list with one matrix per layer), with no interaction between the layers, as opposed to `BM_bernoulli_multiplex` which models the joint distribution of the layers. Available for SBM, SBM_sym and LBM memberships.
+
 ## Bug fixes
 
 * `BM_bernoulli_multiplex`: the estimation failed ("attempt to select less than one element in get1index") when a combination of values over the layers (for instance `01` for two layers) was never observed in the network: its estimated probability was 0 and `0 * log(0)` gave `NaN` likelihoods and ICLs. The combinations which are never observed now have a probability of 0 and are skipped in the E and M steps. This happens for instance when a layer is included in another one, or when two layers are identical.

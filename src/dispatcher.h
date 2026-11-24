@@ -24,6 +24,7 @@ using namespace arma;
 #include "models/bernoulli_covariates.h"
 #include "models/bernoulli_covariates_fast.h"
 #include "models/bernoulli_multiplex.h"
+#include "models/bernoulli_multiplex_independent.h"
 #include "models/gaussian_covariates.h"
 
 
@@ -65,6 +66,10 @@ Rcpp::List dispatcher_model(membership_type & membership_init,
     
     if(model_name == "bernoulli_multiplex")
         return estim<membership_type, bernoulli_multiplex, bernoulli_multiplex::network, real_EM>(
+                membership_init, network_from_R);
+    
+    if(model_name == "bernoulli_multiplex_independent")
+        return estim<membership_type, bernoulli_multiplex_independent, bernoulli_multiplex_independent::network, real_EM>(
                 membership_init, network_from_R);
     
     if(model_name == "poisson")

@@ -22,6 +22,7 @@ reference:
     Several values per dyad (multiplex networks). Missing values are not supported.
 - contents:
   - BM_bernoulli_multiplex
+  - BM_bernoulli_multiplex_independent
   - BM_gaussian_multivariate
   - BM_gaussian_multivariate_independent
   - BM_gaussian_multivariate_independent_homoscedastic
