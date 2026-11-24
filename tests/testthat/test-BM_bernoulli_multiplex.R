@@ -71,3 +71,37 @@ test_that("BM_bernoulli_multiplex LBM estimation runs", {
   model <- BM_bernoulli_multiplex("LBM", list(M1, M2), plotting = "", explore_min = 2, explore_max = 2, ncores = 2, verbosity = 0)
   expect_model_estimation(model)
 })
+
+test_that("BM_bernoulli_multiplex handles combinations never observed", {
+  # the second layer is included in the first one: the combination 01 never occurs
+  npc <- 15
+  Q <- 2
+  n <- npc * Q
+  Z <- diag(Q) %x% matrix(1, npc, 1)
+  P <- matrix(c(.8, .2, .2, .6), Q, Q)
+  M1 <- 1 * (matrix(runif(n * n), n, n) < Z %*% P %*% t(Z))
+  M2 <- M1 * (matrix(runif(n * n), n, n) < 0.5)
+  sym <- function(M) {M[lower.tri(M)] <- t(M)[lower.tri(M)]; M}
+
+  for (membership in c("SBM", "SBM_sym")) {
+    layers <- if (membership == "SBM_sym") list(sym(M1), sym(M2)) else list(M1, M2)
+    model <- BM_bernoulli_multiplex(membership, layers, plotting = "", explore_min = 2, explore_max = 2,
+                                    ncores = 1, verbosity = 0)
+    expect_model_estimation(model)
+    expect_true(all(is.finite(model$ICL)))
+    expect_true(all(model$model_parameters[[2]]$pi$`01` == 0))
+  }
+  # identical layers: neither 01 nor 10 occurs
+  model <- BM_bernoulli_multiplex("SBM", list(M1, M1), plotting = "", explore_min = 2, explore_max = 2,
+                                  ncores = 1, verbosity = 0)
+  expect_model_estimation(model)
+  expect_true(all(is.finite(model$ICL)))
+
+  # LBM
+  M1 <- 1 * (matrix(runif(20 * 30), 20, 30) < 0.4)
+  M2 <- M1 * (matrix(runif(20 * 30), 20, 30) < 0.5)
+  model <- BM_bernoulli_multiplex("LBM", list(M1, M2), plotting = "", explore_min = 2, explore_max = 2,
+                                  ncores = 1, verbosity = 0)
+  expect_model_estimation(model)
+  expect_true(all(is.finite(model$ICL[-1])))
+})
