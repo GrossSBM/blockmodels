@@ -35,6 +35,12 @@ class bernoulli_multiplex
          mat Mones;
          field<mat> adj_indicator;
          field<mat> adj_indicatorZD;
+         // present(k) is false when the k-th combination of values over the
+         // layers is never observed: its probability is then 0 and it is
+         // skipped in the E and M steps (0 * log(0) would give NaN).
+         // presentZD: the same without the diagonal (SBM and SBM_sym)
+         uvec present;
+         uvec presentZD;
 
 
         network(Rcpp::List & network_from_R)
@@ -65,6 +71,8 @@ class bernoulli_multiplex
            
            adj_indicator.set_size(K);
            adj_indicatorZD.set_size(K);
+           present.set_size(K);
+           presentZD.set_size(K);
            
 
            for (unsigned int k=0;k<K;k++)
@@ -80,6 +88,8 @@ class bernoulli_multiplex
                 }
                 
                 adj_indicatorZD(k)=fill_diag(adj_indicator(k),0);  
+                present(k) = accu(adj_indicator(k)) > 0 ? 1 : 0;
+                presentZD(k) = accu(adj_indicatorZD(k)) > 0 ? 1 : 0;
 
            }   
           
@@ -220,6 +230,7 @@ void e_fixed_step(SBM & membership,
 {
         for(unsigned int k=0;k<net.adj_indicator.n_elem;k++)
         {
+           if (!net.presentZD(k)) continue;
            lZ+=net.adj_indicatorZD(k) * membership.Z * log(model.pi(k).t())
               + net.adj_indicatorZD(k).t() * membership.Z * log(model.pi(k));
   
@@ -251,6 +262,7 @@ void e_fixed_step(SBM_sym & membership,
 
         for(unsigned int k=0;k<net.adj_indicator.n_elem;k++)
         {
+           if (!net.presentZD(k)) continue;
            lZ+=net.adj_indicatorZD(k) * membership.Z * log(model.pi(k).t());
               
   
@@ -283,6 +295,7 @@ void e_fixed_step(LBM & membership,
 {
         for(unsigned int k=0;k<net.adj_indicator.n_elem;k++)
         {
+           if (!net.present(k)) continue;
            lZ1+=net.adj_indicator(k) * membership.Z2 * log(model.pi(k).t());
            lZ2+=net.adj_indicator(k).t() * membership.Z1 * log(model.pi(k));
   
@@ -316,6 +329,11 @@ double m_step(SBM & membership,
 
         for(unsigned int k=0;k<net.adj_indicator.n_elem;k++)
         {
+               if (!net.presentZD(k))
+               {
+                   model.pi(k).zeros();
+                   continue;
+               }
                mat machin = membership.Z.t() * net.adj_indicatorZD(k) * membership.Z;
                model.pi(k) = (machin) / (membership.Z.t() * net.MonesZD * membership.Z ); 
 
@@ -380,6 +398,11 @@ double m_step(LBM & membership,
 
         for(unsigned int k=0;k<net.adj_indicator.n_elem;k++)
         {
+               if (!net.present(k))
+               {
+                   model.pi(k).zeros();
+                   continue;
+               }
                mat machin = membership.Z1.t() * net.adj_indicator(k) * membership.Z2;
                model.pi(k) = (machin) / (membership.Z1.t() * net.Mones * membership.Z2 ); 
 
