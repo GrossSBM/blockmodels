@@ -1,6 +1,21 @@
 # Changelog
 
+## blockmodels (development version)
+
+### Bug fixes
+
+- `BM_bernoulli_multiplex`: the estimation failed (“attempt to select
+  less than one element in get1index”) when a combination of values over
+  the layers (for instance `01` for two layers) was never observed in
+  the network: its estimated probability was 0 and `0 * log(0)` gave
+  `NaN` likelihoods and ICLs. The combinations which are never observed
+  now have a probability of 0 and are skipped in the E and M steps. This
+  happens for instance when a layer is included in another one, or when
+  two layers are identical.
+
 ## blockmodels 1.2.1
+
+CRAN release: 2026-11-09
 
 ### New features
 
