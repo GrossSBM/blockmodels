@@ -69,7 +69,7 @@ class gaussian_multivariate
          * your model parameters, knowing the membership and the network in the
          * SBM case
          */
-        n_parameters = membership.Z.n_cols * membership.Z.n_cols * net.adj.n_slices + net.adj.n_slices * net.adj.n_slices;
+        n_parameters = membership.Z.n_cols * membership.Z.n_cols * net.adj.n_slices + net.adj.n_slices * (net.adj.n_slices + 1) / 2; // Sigma is symmetric
         mu.set_size(membership.Z.n_cols, membership.Z.n_cols, net.adj.n_slices);
         Sigma.set_size(net.adj.n_slices, net.adj.n_slices);
         iL.set_size(net.adj.n_slices, net.adj.n_slices);
@@ -81,7 +81,7 @@ class gaussian_multivariate
          * your model parameters, knowing the membership and the network in the
          * SBM_sym case
          */
-        n_parameters = membership.Z.n_cols * (membership.Z.n_cols+1)/2 * net.adj.n_slices + net.adj.n_slices * net.adj.n_slices;
+        n_parameters = membership.Z.n_cols * (membership.Z.n_cols+1)/2 * net.adj.n_slices + net.adj.n_slices * (net.adj.n_slices + 1) / 2; // Sigma is symmetric
         mu.set_size(membership.Z.n_cols, membership.Z.n_cols, net.adj.n_slices);
         Sigma.set_size(net.adj.n_slices, net.adj.n_slices);
         iL.set_size(net.adj.n_slices, net.adj.n_slices);
@@ -93,7 +93,7 @@ class gaussian_multivariate
          * your model parameters, knowing the membership and the network in the
          * LBM case 
          */
-        n_parameters = membership.Z1.n_cols * membership.Z2.n_cols * net.adj.n_slices + net.adj.n_slices * net.adj.n_slices;
+        n_parameters = membership.Z1.n_cols * membership.Z2.n_cols * net.adj.n_slices + net.adj.n_slices * (net.adj.n_slices + 1) / 2; // Sigma is symmetric
         mu.set_size(membership.Z1.n_cols, membership.Z2.n_cols, net.adj.n_slices);
         Sigma.set_size(net.adj.n_slices, net.adj.n_slices);
         iL.set_size(net.adj.n_slices, net.adj.n_slices);

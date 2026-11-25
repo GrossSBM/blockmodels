@@ -6,6 +6,8 @@
 
 ## Bug fixes
 
+* `BM_gaussian_multivariate`: the number of parameters used in the ICL penalty counted `L^2` parameters for the `L x L` covariance matrix `Sigma` of the layers. Since `Sigma` is symmetric, it has `L(L+1)/2` free parameters, which is now what is counted. This changes the ICL values (when `L >= 2`) and may change the selected number of blocks.
+* Multivariate models (`BM_bernoulli_multiplex`, `BM_bernoulli_multiplex_independent`, `BM_gaussian_multivariate`, `BM_gaussian_multivariate_independent`, `BM_gaussian_multivariate_independent_homoscedastic`): the ICL penalty on the connectivity parameters used `log(L * n(n-1))` (`log(L * n1 * n2)` for LBM, `log(L * n(n-1)/2)` for SBM_sym), where `L` is the number of layers. The number of observations is the number of dyads, each one carrying a vector of `L` values, so the penalty now uses `log(n(n-1))` (resp. `log(n1 * n2)`, `log(n(n-1)/2)`). This changes the ICL values and may change the selected number of blocks.
 * `BM_bernoulli_multiplex`: the estimation failed ("attempt to select less than one element in get1index") when a combination of values over the layers (for instance `01` for two layers) was never observed in the network: its estimated probability was 0 and `0 * log(0)` gave `NaN` likelihoods and ICLs. The combinations which are never observed now have a probability of 0 and are skipped in the E and M steps. This happens for instance when a layer is included in another one, or when two layers are identical.
 
 # blockmodels 1.2.1

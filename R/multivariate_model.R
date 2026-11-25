@@ -96,17 +96,20 @@ setRefClass("multivariate_model",
         network_to_cc = function() { list(adjacency = adj) },
         data_number = function()
         {
+            # The observations are the dyads (each one carrying a vector of
+            # length(adj) values), not the individual entries of each layer:
+            # the BIC-like term of the ICL is log(number of dyads).
             if(membership_name=="SBM")
             {
-                return(dim(adj[[1]])[1]*(dim(adj[[1]])[1]-1)*length(adj))
+                return(dim(adj[[1]])[1]*(dim(adj[[1]])[1]-1))
             }
             if(membership_name=="SBM_sym")
             {
-                return(dim(adj[[1]])[1]*(dim(adj[[1]])[1]-1)/2*length(adj))
+                return(dim(adj[[1]])[1]*(dim(adj[[1]])[1]-1)/2)
             }
             else
             {
-                return(dim(adj[[1]])[1]*dim(adj[[1]])[2]*length(adj))
+                return(dim(adj[[1]])[1]*dim(adj[[1]])[2])
             }
         },
         split_membership_model = function(Q)
