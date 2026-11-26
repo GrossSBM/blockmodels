@@ -369,8 +369,7 @@ setRefClass("model",
                 good <- FALSE
 
                 ICLs <- sapply(results, function(r){
-                            r$PL - .5*(r$model$n_parameters *
-                                        log(.self$data_number())
+                            r$PL - .5*(.self$model_penalty(r$model)
                                 +
                                 getRefClass(membership_name)(
                                         from_cc=r$membership)$ICL_penalty())
@@ -448,8 +447,7 @@ setRefClass("model",
                     model_parameters[[Q]] <<- r$model
                     PL[Q] <<- r$PL
                     H[Q] <<- r$H
-                    ICL[Q] <<- r$PL - .5*(r$model$n_parameters *
-                        log(.self$data_number()) + memberships[[Q]]$ICL_penalty())
+                    ICL[Q] <<- r$PL - .5*(.self$model_penalty(r$model) + memberships[[Q]]$ICL_penalty())
                     ret<-TRUE
 
                     toc('estimation_saving_goods')
@@ -572,8 +570,7 @@ setRefClass("model",
                                             .self$network_to_cc(),
                                             FALSE)
 
-                            local_ICL <- r$PL - .5*(r$model$n_parameters *
-                                                log(.self$data_number())
+                            local_ICL <- r$PL - .5*(.self$model_penalty(r$model)
                                         +
                                         getRefClass(membership_name)(
                                                 from_cc=r$membership)$ICL_penalty())
@@ -663,6 +660,13 @@ setRefClass("model",
             }
         },
         precompute = function() {},
+        model_penalty = function(model)
+        {
+            # BIC-like penalty of the connectivity parameters in the ICL
+            # (without the 1/2 factor): n_parameters * log(number of observations).
+            # model is the list of the model parameters exported by the C++ code
+            model$n_parameters * log(.self$data_number())
+        },
         plot_obs_pred = function(Q) {},
         plot_parameters = function(Q) {},
         show = function()

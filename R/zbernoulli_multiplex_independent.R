@@ -11,6 +11,30 @@ BM_bernoulli_multiplex_independent <-
                                    ...)
                   .self$postinit()
                 },
+                accepts_NA = function() { TRUE },
+                model_penalty = function(model)
+                {
+                  # The layers are independent given the blocks: the BIC-like
+                  # penalty is the sum over the layers of
+                  # (number of parameters of the layer) * log(number of observed dyads of the layer)
+                  n_parameters_per_layer <- model$n_parameters / length(adj)
+                  sum(vapply(adj, function(a) n_parameters_per_layer * log(.self$layer_data_number(a)),
+                             numeric(1)))
+                },
+                layer_data_number = function(a)
+                {
+                  # number of observed dyads in the layer a
+                  mask <- !is.na(a)
+                  if(membership_name=="SBM")
+                  {
+                    return(sum(mask) - sum(diag(mask)))
+                  }
+                  if(membership_name=="SBM_sym")
+                  {
+                    return((sum(mask) - sum(diag(mask)))/2)
+                  }
+                  return(sum(mask))
+                },
                 plot_parameters = function(Q)
                 {
                 },
@@ -37,6 +61,9 @@ BM_bernoulli_multiplex_independent <-
                   for(k in 1:length(adj))
                   {
                     ret[[k]] <- adj[[k]]-pred[[k]]
+                    # null residuals on the missing entries: they must not
+                    # drive the initializations (splits of the groups)
+                    ret[[k]][is.na(ret[[k]])] <- 0
                   }
                   return(ret)
                 }

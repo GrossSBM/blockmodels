@@ -44,6 +44,9 @@ $config{'SCALAR_MODEL_ARG_ITEM'} =
 $config{'MULTIVARIATE_MODEL_ARG_ITEM'} = 
     "\\item{adj}{The list of adjacency matrices. All matrices must have the same size. Missing values (\\code{NA}) are not supported for multivariate models.}";
 
+$config{'MULTIVARIATE_MODEL_NA_ARG_ITEM'} = 
+    "\\item{adj}{The list of adjacency matrices. All matrices must have the same size. They may contain missing values (\\code{NA}): the missing entries are ignored in the likelihood, the estimation of the parameters and the ICL. As the layers are independent given the blocks, a dyad missing on some layers only still contributes through its observed layers. This assumes that the entries are missing at random. The diagonal is ignored for SBM and SBM_sym memberships.}";
+
 $config{'COVARIATES_ARG'} = 'covariates';
 
 $config{'COVARIATES_ARG_ITEM'} =

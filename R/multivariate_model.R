@@ -16,11 +16,12 @@ setRefClass("multivariate_model",
                            "Inanis vacuum est."))
             }
 
-            if(any(vapply(adj, anyNA, logical(1))))
+            if(any(vapply(adj, anyNA, logical(1))) && !.self$accepts_NA())
             {
                 stop(paste("Missing values (NA) in the adjacency matrices are not supported",
                            "for multivariate models. They are only supported for scalar",
-                           "models (bernoulli, poisson, gaussian, with or without covariates)."))
+                           "models (bernoulli, poisson, gaussian, with or without covariates)",
+                           "and for the independent bernoulli multiplex model."))
             }
 
             for(i in 1:length(adj))
@@ -94,22 +95,34 @@ setRefClass("multivariate_model",
             paste(nrow(adj[[1]]),"x",ncol(adj[[1]]),"multivariate network in dimention",length(adj))
         },  
         network_to_cc = function() { list(adjacency = adj) },
+        accepts_NA = function()
+        {
+            # TRUE for the models handling missing values in the adjacency matrices
+            FALSE
+        },
+        observed_dyads = function()
+        {
+            # logical matrix of the dyads used by the model: by default, the
+            # dyads observed on all the layers
+            Reduce(`&`, lapply(adj, function(a) !is.na(a)))
+        },
         data_number = function()
         {
-            # The observations are the dyads (each one carrying a vector of
-            # length(adj) values), not the individual entries of each layer:
-            # the BIC-like term of the ICL is log(number of dyads).
+            # The observations are the (observed) dyads, each one carrying a
+            # vector of length(adj) values, not the individual entries of each
+            # layer: the BIC-like term of the ICL is log(number of dyads).
+            mask <- .self$observed_dyads()
             if(membership_name=="SBM")
             {
-                return(dim(adj[[1]])[1]*(dim(adj[[1]])[1]-1))
+                return(sum(mask) - sum(diag(mask)))
             }
             if(membership_name=="SBM_sym")
             {
-                return(dim(adj[[1]])[1]*(dim(adj[[1]])[1]-1)/2)
+                return((sum(mask) - sum(diag(mask)))/2)
             }
             else
             {
-                return(dim(adj[[1]])[1]*dim(adj[[1]])[2])
+                return(sum(mask))
             }
         },
         split_membership_model = function(Q)

@@ -17,34 +17,50 @@ class bernoulli_multiplex_independent
     class network
     {
         public:
-        cube adj; // n x n x d (or n1 x n2 x d for LBM)
+        cube adj; // n x n x d (or n1 x n2 x d for LBM), missing values set to 0
+
+        // For NA handling: mask.slice(k) is 1 where the k-th layer is
+        // observed, 0 where it is missing (NA). The layers are independent
+        // given the blocks, so each layer has its own mask: a dyad missing on
+        // some layers only still contributes through its observed layers.
+        cube mask;
 
         // precomputed matrices (ZD: zero diagonal, for SBM and SBM_sym)
         cube adjZD;
         cube adjZDt;
         cube adjt;
-        mat Mones;
-        mat MonesZD;
+        cube maskZD;
+        cube maskZDt;
+        cube maskt;
 
         network(Rcpp::List & network_from_R)
         {
             Rcpp::List adj_list = network_from_R["adjacency"];
             mat first_mat = Rcpp::as<mat>( adj_list[0] );
-            adj.set_size(first_mat.n_rows, first_mat.n_cols, adj_list.size());
-            for(int k=0; k<adj_list.size(); k++)
-                adj.slice(k) = Rcpp::as<mat>(adj_list[k]);
+            unsigned int d = adj_list.size();
+            adj.set_size(first_mat.n_rows, first_mat.n_cols, d);
+            mask.set_size(first_mat.n_rows, first_mat.n_cols, d);
+            for(unsigned int k=0; k<d; k++)
+            {
+                mat adj_orig = Rcpp::as<mat>(adj_list[k]);
+                mask.slice(k) = compute_mask(adj_orig);
+                adj.slice(k) = replace_missing_values(adj_orig);
+            }
 
-            Mones = ones<mat>(first_mat.n_rows, first_mat.n_cols);
-            MonesZD = fill_diag(Mones,0);
-
-            adjZD.set_size(adj.n_rows, adj.n_cols, adj.n_slices);
-            adjZDt.set_size(adj.n_cols, adj.n_rows, adj.n_slices);
-            adjt.set_size(adj.n_cols, adj.n_rows, adj.n_slices);
-            for(unsigned int k=0; k<adj.n_slices; k++)
+            adjZD.set_size(adj.n_rows, adj.n_cols, d);
+            adjZDt.set_size(adj.n_cols, adj.n_rows, d);
+            adjt.set_size(adj.n_cols, adj.n_rows, d);
+            maskZD.set_size(adj.n_rows, adj.n_cols, d);
+            maskZDt.set_size(adj.n_cols, adj.n_rows, d);
+            maskt.set_size(adj.n_cols, adj.n_rows, d);
+            for(unsigned int k=0; k<d; k++)
             {
                 adjZD.slice(k) = fill_diag(adj.slice(k),0);
                 adjZDt.slice(k) = adjZD.slice(k).t();
                 adjt.slice(k) = adj.slice(k).t();
+                maskZD.slice(k) = fill_diag(mask.slice(k),0);
+                maskZDt.slice(k) = maskZD.slice(k).t();
+                maskt.slice(k) = mask.slice(k).t();
             }
         }
     };
@@ -125,7 +141,8 @@ double bmi_bernoulli_PL(const mat & p, const mat & A, const mat & O)
 
 /* E step
  *
- * For each layer k, with A = adjacency, O = ones (without diagonal for SBM):
+ * For each layer k, with A = adjacency, O = mask of the observed entries
+ * (without diagonal for SBM):
  *   A Z log(pi)' + (O-A) Z log(1-pi)'
  *     = A Z (log(pi) - log(1-pi))' + O Z log(1-pi)'
  */
@@ -137,7 +154,6 @@ void e_fixed_step(SBM & membership,
                   bernoulli_multiplex_independent::network & net,
                   mat & lZ)
 {
-    mat OZ = net.MonesZD * membership.Z; // MonesZD is symmetric
     for(unsigned int k=0; k<net.adj.n_slices; k++)
     {
         mat lp = bmi_safe_log(model.pi.slice(k));
@@ -145,7 +161,8 @@ void e_fixed_step(SBM & membership,
         mat logit = lp - l1mp;
         lZ += net.adjZD.slice(k) * membership.Z * logit.t()
             + net.adjZDt.slice(k) * membership.Z * logit
-            + OZ * (l1mp.t() + l1mp);
+            + net.maskZD.slice(k) * membership.Z * l1mp.t()
+            + net.maskZDt.slice(k) * membership.Z * l1mp;
     }
 }
 
@@ -156,13 +173,12 @@ void e_fixed_step(SBM_sym & membership,
                   bernoulli_multiplex_independent::network & net,
                   mat & lZ)
 {
-    mat OZ = net.MonesZD * membership.Z;
     for(unsigned int k=0; k<net.adj.n_slices; k++)
     {
         mat lp = bmi_safe_log(model.pi.slice(k));
         mat l1mp = bmi_safe_log(1 - model.pi.slice(k));
         lZ += net.adjZD.slice(k) * membership.Z * (lp - l1mp)
-            + OZ * l1mp;
+            + net.maskZD.slice(k) * membership.Z * l1mp;
     }
 }
 
@@ -174,23 +190,31 @@ void e_fixed_step(LBM & membership,
                   mat & lZ1,
                   mat & lZ2)
 {
-    mat OZ2 = net.Mones * membership.Z2;
-    mat OtZ1 = net.Mones.t() * membership.Z1;
     for(unsigned int k=0; k<net.adj.n_slices; k++)
     {
         mat lp = bmi_safe_log(model.pi.slice(k));
         mat l1mp = bmi_safe_log(1 - model.pi.slice(k));
         mat logit = lp - l1mp;
         lZ1 += net.adj.slice(k) * membership.Z2 * logit.t()
-             + OZ2 * l1mp.t();
+             + net.mask.slice(k) * membership.Z2 * l1mp.t();
         lZ2 += net.adjt.slice(k) * membership.Z1 * logit
-             + OtZ1 * l1mp;
+             + net.maskt.slice(k) * membership.Z1 * l1mp;
     }
 }
 
 
 
-/* M step: explicit maximum, layer by layer */
+/* M step: explicit maximum, layer by layer, on the observed entries.
+ * A block pair without any observed entry in a layer gets pi = 0 (instead of
+ * 0/0): it does not contribute to the likelihood anyway. */
+
+inline
+mat bmi_ratio(const mat & A, const mat & O)
+{
+    mat p = A / O;
+    p.elem(find(O <= 0)).zeros();
+    return p;
+}
 
 template<>
 inline
@@ -198,12 +222,12 @@ double m_step(SBM & membership,
               bernoulli_multiplex_independent & model,
               bernoulli_multiplex_independent::network & net)
 {
-    mat ZtOZ = membership.Z.t() * net.MonesZD * membership.Z;
     double PL = 0;
     for(unsigned int k=0; k<net.adj.n_slices; k++)
     {
         mat ZtAZ = membership.Z.t() * net.adjZD.slice(k) * membership.Z;
-        model.pi.slice(k) = ZtAZ / ZtOZ;
+        mat ZtOZ = membership.Z.t() * net.maskZD.slice(k) * membership.Z;
+        model.pi.slice(k) = bmi_ratio(ZtAZ, ZtOZ);
         PL += bmi_bernoulli_PL(model.pi.slice(k), ZtAZ, ZtOZ);
     }
     return PL;
@@ -224,12 +248,12 @@ double m_step(LBM & membership,
               bernoulli_multiplex_independent & model,
               bernoulli_multiplex_independent::network & net)
 {
-    mat Z1tOZ2 = membership.Z1.t() * net.Mones * membership.Z2;
     double PL = 0;
     for(unsigned int k=0; k<net.adj.n_slices; k++)
     {
         mat Z1tAZ2 = membership.Z1.t() * net.adj.slice(k) * membership.Z2;
-        model.pi.slice(k) = Z1tAZ2 / Z1tOZ2;
+        mat Z1tOZ2 = membership.Z1.t() * net.mask.slice(k) * membership.Z2;
+        model.pi.slice(k) = bmi_ratio(Z1tAZ2, Z1tOZ2);
         PL += bmi_bernoulli_PL(model.pi.slice(k), Z1tAZ2, Z1tOZ2);
     }
     return PL;

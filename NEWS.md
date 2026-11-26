@@ -3,6 +3,7 @@
 ## New features
 
 * New model `BM_bernoulli_multiplex_independent` for multiplex binary networks whose layers are independent given the blocks: one connectivity matrix per layer (`model_parameters[[Q]]$pi` is a list with one matrix per layer), with no interaction between the layers, as opposed to `BM_bernoulli_multiplex` which models the joint distribution of the layers. Available for SBM, SBM_sym and LBM memberships.
+* `BM_bernoulli_multiplex_independent` handles missing values (`NA`) in the adjacency matrices, as the scalar models do: each layer has its own mask of observed entries, so a dyad missing on some layers only still contributes through its observed layers (missing at random assumption). The penalty of the connectivity parameters in the ICL is the sum over the layers of (number of parameters of the layer) × log(number of observed dyads in the layer); without missing values it is the same as before. The other multivariate models (`BM_bernoulli_multiplex`, gaussian multivariate) still reject `NA` with an explicit error.
 
 ## Bug fixes
 
